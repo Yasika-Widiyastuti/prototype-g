@@ -16,8 +16,27 @@
 <div class="py-12 bg-gray-50">
     <div class="max-w-md mx-auto px-4 sm:px-6">
         
+        <!-- Success Message - Moved to top -->
+        @if(session('status'))
+            <div class="mb-6">
+                <div class="bg-green-50 border-2 border-green-200 rounded-xl p-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-sm font-semibold text-green-800 mb-1">Berhasil!</h3>
+                            <p class="text-sm text-green-700">{{ session('status') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- Header -->
-        <div class="text-center mb-8 loading">
+        <div class="text-center mb-8">
             <div class="bg-yellow-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
@@ -27,8 +46,33 @@
             <p class="text-gray-600">Masuk ke akun Anda untuk melanjutkan</p>
         </div>
 
+        <!-- Flash Messages -->
+        @if(session('success'))
+            <div class="mb-6 bg-green-50 border-2 border-green-200 rounded-xl p-4 text-center">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="mb-6 bg-red-50 border-2 border-red-200 rounded-xl p-4 text-center">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        @if(session('info'))
+            <div class="mb-6 bg-blue-50 border-2 border-blue-200 rounded-xl p-4 text-center">
+                {{ session('info') }}
+            </div>
+        @endif
+
+        @if(session('warning'))
+            <div class="mb-6 bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4 text-center">
+                {{ session('warning') }}
+            </div>
+        @endif
+
         <!-- Form -->
-        <div class="bg-white rounded-xl shadow-lg p-8 loading">
+        <div class="bg-white rounded-xl shadow-lg p-8">
             <form action="{{ route('login') }}" method="POST" class="space-y-6">
                 @csrf
                 
@@ -80,7 +124,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                             </svg>
-                            <svg x-show="showPassword" class="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg x-show="showPassword" class="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: none;">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
                             </svg>
                         </button>
@@ -101,14 +145,14 @@
                             Ingat saya
                         </label>
                     </div>
-                    <a href="#" class="text-sm text-yellow-600 hover:text-yellow-700">
+                    <a href="{{ route('password.request') }}" class="text-sm text-yellow-600 hover:text-yellow-700">
                         Lupa password?
                     </a>
                 </div>
 
                 <!-- Submit Button -->
                 <button type="submit" 
-                        class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg transition duration-200 hover-lift">
+                        class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg transition duration-200 transform hover:-translate-y-1 hover:shadow-lg">
                     Masuk
                 </button>
 
@@ -136,32 +180,26 @@
         </div>
 
         <!-- Benefits -->
-        <div class="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6 loading">
-            <h3 class="text-lg font-semibold text-yellow-800 mb-4">Keuntungan Menjadi Member</h3>
+        <div class="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-yellow-800 mb-4">Keuntungan Memiliki Akun:</h3>
             <ul class="space-y-3">
                 <li class="flex items-center text-yellow-700">
                     <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
-                    Proses booking yang lebih cepat
+                    Proses sewa lebih cepat
+                </li>
+                <li class="flex items-center text-yellow-700">
+                    <svg class="w-5 w-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Riwayat transaksi tersimpan
                 </li>
                 <li class="flex items-center text-yellow-700">
                     <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
-                    Akses ke penawaran khusus member
-                </li>
-                <li class="flex items-center text-yellow-700">
-                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    Riwayat transaksi yang tersimpan
-                </li>
-                <li class="flex items-center text-yellow-700">
-                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    Notifikasi produk baru dan promo
+                    Bisa cek status sewa kapan saja
                 </li>
             </ul>
         </div>

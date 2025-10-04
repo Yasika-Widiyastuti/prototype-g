@@ -10,15 +10,20 @@ class AdminSeeder extends Seeder
 {
     public function run()
     {
-        User::create([
-            'name' => 'Admin System',
-            'email' => 'admin@sewakonser.com',
-            'phone' => '081234567890',
-            'address' => 'Kantor Pusat Sewa Konser',
-            'password' => Hash::make('admin123'),
-            'role' => 'admin',
-            'is_active' => true,
-            'email_verified_at' => now(),
-        ]);
+        \Log::info('AdminSeeder running...');
+        echo ">>> Running AdminSeeder\n";
+        User::updateOrCreate(
+            ['email' => 'admin@sewakonser.com'], // cek berdasarkan email
+            [
+                'name' => 'Admin System',
+                'phone' => '081234567890',
+                'address' => 'Kantor Pusat Sewa Konser',
+                'password' => Hash::make('admin123'),
+                'role' => 'admin',
+                'is_active' => true,
+                'email_verified_at' => now(),
+            ]
+        );
+
     }
 }

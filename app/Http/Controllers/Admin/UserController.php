@@ -18,6 +18,40 @@ class UserController extends Controller
         $this->activityLogService = $activityLogService;
     }
 
+    
+    // Update password user
+    public function resetPassword(Request $request, User $user)
+    {
+        if ($user->role !== 'customer') {
+            return redirect()->route('admin.users.index')->with('error', 'User tidak valid');
+        }
+
+        $request->validate([
+            'password' => 'required|min:6|confirmed',
+        ]);
+
+        $user->password = bcrypt($request->password);
+        $user->save();
+
+        // Optional: log activity & notify user
+        $this->activityLogService->logUserPasswordReset($user);
+        $this->notificationService->notifyPasswordResetByAdmin($user);
+
+        \DB::table('user_notifications')->insert([
+            'user_id' => $user->id,
+            'title' => 'Password Anda direset',
+            'message' => 'Admin telah mereset password akun Anda. Silakan login dengan password baru.',
+            'is_read' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        
+        return redirect()->route('signIn')->with('success', "Password {$user->name} berhasil direset. Silakan login dengan password baru.");
+
+    }
+
+    
     public function index(Request $request)
     {
         $query = User::where('role', 'customer');
@@ -87,7 +121,10 @@ class UserController extends Controller
         }
 
         $user->delete();
+        // Reset password berhasil
+        return redirect()->route('signIn')->with('success', "Password berhasil direset. Silakan login dengan password baru.");
 
-        return redirect()->route('admin.users.index')->with('success', 'User berhasil dihapus');
+        // Jika ada kondisi menunggu atau error
+        return redirect()->route('signIn')->with('info', "Akun Anda menunggu verifikasi.");
     }
 }
