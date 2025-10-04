@@ -170,8 +170,8 @@
                             <div x-show="open" @click.away="open = false"
                                  x-transition
                                  class="absolute right-0 mt-2 w-48 bg-white text-gray-900 rounded-lg shadow-lg py-2 z-50">
-                                <a href="#" class="block px-4 py-2 hover:bg-gray-100">Profile</a>
-                                <a href="#" class="block px-4 py-2 hover:bg-gray-100">Pesanan Saya</a>
+                                <a href="{{ route('profile.index') }}" class="block px-4 py-2 hover:bg-gray-100">Profil</a>
+                                <a href="{{ route('profile.orders') }}" class="block px-4 py-2 hover:bg-gray-100">Pesanan Saya</a>
                                 <div class="border-t border-gray-200"></div>
                                 <form action="{{ route('logout') }}" method="POST">
                                     @csrf

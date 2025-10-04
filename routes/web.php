@@ -11,6 +11,9 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Admin\AdminProductController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProfileOrderController;
+
 
 // ==========================
 // Auth Routes (Only for guests)
@@ -78,11 +81,21 @@ Route::middleware('auth')->prefix('checkout')->name('checkout.')->group(function
 // User Profile (auth required)
 // ==========================
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [RegisterController::class, 'showProfile'])->name('profile');
-    Route::get('/profile/edit', [RegisterController::class, 'editProfile'])->name('profile.edit');
-    Route::post('/profile/edit', [RegisterController::class, 'updateProfile'])->name('profile.update');
-    Route::delete('/profile/delete', [RegisterController::class, 'deleteAccount'])->name('profile.delete');
+    // Show profile
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+      
+    // Edit profile
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::post('/profile/edit', [ProfileController::class, 'update'])->name('profile.update');
+    
+    // Delete account
+    Route::delete('/profile/delete', [ProfileController::class, 'deleteAccount'])->name('profile.delete');
+
+    // 👇 Tambahin ini untuk Pesanan Saya
+    Route::get('/profile/orders', [ProfileOrderController::class, 'index'])->name('profile.orders');
+    Route::get('/profile/orders/{id}', [ProfileOrderController::class, 'show'])->name('profile.orders.show');
 });
+
 
 // ==========================
 // Debug Route (auth required)
