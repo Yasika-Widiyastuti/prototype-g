@@ -18,7 +18,6 @@
         <div class="bg-white rounded-xl shadow-lg p-8">
             <h1 class="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
 
-            <!-- Progress Steps -->
             <div class="mb-8">
                 <div class="flex items-center">
                     <div class="flex items-center text-blue-600">
@@ -44,7 +43,6 @@
                 </div>
             </div>
 
-            <!-- Cart Items -->
             <div class="mb-8">
                 <h2 class="text-xl font-bold text-gray-900 mb-6">Detail Pesanan</h2>
 
@@ -62,18 +60,60 @@
                     </div>
                 </div>
                 @else
-                <div class="space-y-4">
-                    @foreach($cartItems as $item)
-                    <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                        <div class="flex items-center">
-                            <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}" class="w-16 h-16 object-cover rounded">
-                            <div class="ml-4">
+                <div class="space-y-4" id="cart-items-container">
+                    @foreach($cartItems as $cartKey => $item)
+                    <div class="cart-item flex items-center justify-between p-6 border border-gray-200 rounded-lg bg-white shadow-sm" data-cart-key="{{ $cartKey }}">
+                        <div class="flex items-center flex-1">
+                            <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}" class="w-20 h-20 object-cover rounded-lg">
+                            <div class="ml-6">
                                 <h3 class="text-lg font-medium text-gray-900">{{ $item['name'] }}</h3>
-                                <p class="text-sm text-gray-500">{{ $item['quantity'] }} x Rp {{ number_format($item['price'], 0, ',', '.') }}</p>
+                                <p class="text-sm text-gray-500 mb-2">{{ $item['category'] }}</p>
+                                <p class="text-sm font-medium text-blue-600">Rp {{ number_format($item['price'], 0, ',', '.') }} / hari</p>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <p class="text-lg font-bold text-gray-900">Rp {{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}</p>
+                        
+                        <div class="flex items-center space-x-4">
+                            <!-- Quantity Controls -->
+                            <div class="flex items-center space-x-3">
+                                <button type="button" 
+                                        class="quantity-btn decrease-btn w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                        data-action="decrease"
+                                        data-cart-key="{{ $cartKey }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                                    </svg>
+                                </button>
+                                
+                                <span class="quantity-display text-lg font-medium text-gray-900 min-w-8 text-center" data-quantity="{{ $item['quantity'] }}">
+                                    {{ $item['quantity'] }}
+                                </span>
+                                
+                                <button type="button" 
+                                        class="quantity-btn increase-btn w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 transition"
+                                        data-action="increase"
+                                        data-cart-key="{{ $cartKey }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <!-- Item Total -->
+                            <div class="text-right min-w-24">
+                                <p class="item-total text-lg font-bold text-gray-900">
+                                    Rp {{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}
+                                </p>
+                            </div>
+                            
+                            <!-- Remove Button -->
+                            <button type="button" 
+                                    class="remove-btn text-red-600 hover:text-red-800 p-2 rounded-full hover:bg-red-50 transition"
+                                    data-cart-key="{{ $cartKey }}"
+                                    title="Hapus dari keranjang">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                     @endforeach
@@ -81,13 +121,13 @@
                 @endif
             </div>
 
-            <!-- Order Summary -->
+            @if(!empty($cartItems))
             <div class="bg-gray-50 rounded-lg p-6 mb-8">
                 <h3 class="text-lg font-bold text-gray-900 mb-4">Ringkasan Pembayaran</h3>
                 <div class="space-y-2">
                     <div class="flex justify-between">
                         <span class="text-gray-600">Subtotal</span>
-                        <span class="text-gray-900">Rp {{ number_format($total, 0, ',', '.') }}</span>
+                        <span class="subtotal-amount text-gray-900">Rp {{ number_format($total, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Biaya Admin</span>
@@ -96,24 +136,218 @@
                     <div class="border-t border-gray-300 pt-2">
                         <div class="flex justify-between">
                             <span class="text-lg font-bold text-gray-900">Total</span>
-                            <span class="text-lg font-bold text-blue-600">Rp {{ number_format($total + 5000, 0, ',', '.') }}</span>
+                            <span class="total-amount text-lg font-bold text-blue-600">Rp {{ number_format($total + 5000, 0, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Action Buttons -->
             <div class="flex justify-between">
                 <a href="{{ route('shop') }}" 
                    class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-6 py-3 rounded-lg transition">
                     Lanjut Belanja
                 </a>
-                <a href="{{ route('payment') }}" 
+                <a href="{{ route('checkout.payment') }}" 
                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition">
                     Lanjut ke Pembayaran
                 </a>
             </div>
+            @endif
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle quantity buttons
+    document.querySelectorAll('.quantity-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const action = this.getAttribute('data-action');
+            const cartKey = this.getAttribute('data-cart-key');
+            const cartItem = this.closest('.cart-item');
+            
+            updateQuantity(cartKey, action, cartItem);
+        });
+    });
+    
+    // Handle remove buttons
+    document.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const cartKey = this.getAttribute('data-cart-key');
+            const cartItem = this.closest('.cart-item');
+            
+            removeItem(cartKey, cartItem);
+        });
+    });
+});
+
+function updateQuantity(cartKey, action, cartItem) {
+    // Show loading state
+    const quantityBtns = cartItem.querySelectorAll('.quantity-btn');
+    quantityBtns.forEach(btn => {
+        btn.disabled = true;
+        btn.classList.add('opacity-50');
+    });
+    
+    fetch('{{ route("checkout.update-quantity") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            cart_key: cartKey,
+            action: action
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (data.item_removed) {
+                // Remove item from DOM with animation
+                cartItem.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                cartItem.style.opacity = '0';
+                cartItem.style.transform = 'translateX(-100%)';
+                
+                setTimeout(() => {
+                    cartItem.remove();
+                    
+                    // Check if cart is empty
+                    const remainingItems = document.querySelectorAll('.cart-item');
+                    if (remainingItems.length === 0) {
+                        location.reload(); // Reload to show empty cart message
+                    }
+                }, 300);
+            } else {
+                // Update quantity display
+                const quantityDisplay = cartItem.querySelector('.quantity-display');
+                quantityDisplay.textContent = data.new_quantity;
+                quantityDisplay.setAttribute('data-quantity', data.new_quantity);
+                
+                // Update item total
+                const itemTotal = cartItem.querySelector('.item-total');
+                const price = parseInt(cartItem.querySelector('.text-blue-600').textContent.replace(/[^\d]/g, ''));
+                const newItemTotal = price * data.new_quantity;
+                itemTotal.textContent = 'Rp ' + newItemTotal.toLocaleString('id-ID');
+                
+                // Disable decrease button if quantity is 1
+                const decreaseBtn = cartItem.querySelector('.decrease-btn');
+                if (data.new_quantity <= 1) {
+                    decreaseBtn.disabled = true;
+                    decreaseBtn.classList.add('opacity-50');
+                } else {
+                    decreaseBtn.disabled = false;
+                    decreaseBtn.classList.remove('opacity-50');
+                }
+            }
+            
+            // Update totals
+            updateTotals(data.formatted_total, data.new_total + 5000);
+            
+            // Update cart counter in header
+            if (window.updateCartCounter) {
+                window.updateCartCounter(data.cart_count);
+            }
+            
+            // Show success notification
+            if (window.showNotification) {
+                window.showNotification(data.message, 'success');
+            }
+        } else {
+            throw new Error(data.message || 'Gagal mengupdate quantity');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (window.showNotification) {
+            window.showNotification('Terjadi kesalahan. Silakan coba lagi.', 'error');
+        }
+    })
+    .finally(() => {
+        // Re-enable buttons
+        quantityBtns.forEach(btn => {
+            btn.disabled = false;
+            btn.classList.remove('opacity-50');
+        });
+    });
+}
+
+function removeItem(cartKey, cartItem) {
+    if (!confirm('Apakah Anda yakin ingin menghapus produk ini dari keranjang?')) {
+        return;
+    }
+    
+    // Show loading state
+    const removeBtn = cartItem.querySelector('.remove-btn');
+    removeBtn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+    removeBtn.disabled = true;
+    
+    fetch('{{ route("checkout.remove-item") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            cart_key: cartKey
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove item from DOM with animation
+            cartItem.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            cartItem.style.opacity = '0';
+            cartItem.style.transform = 'translateX(-100%)';
+            
+            setTimeout(() => {
+                cartItem.remove();
+                
+                // Check if cart is empty
+                const remainingItems = document.querySelectorAll('.cart-item');
+                if (remainingItems.length === 0) {
+                    location.reload(); // Reload to show empty cart message
+                }
+            }, 300);
+            
+            // Update totals
+            updateTotals(data.formatted_total, data.new_total + 5000);
+            
+            // Update cart counter in header
+            if (window.updateCartCounter) {
+                window.updateCartCounter(data.cart_count);
+            }
+            
+            // Show success notification
+            if (window.showNotification) {
+                window.showNotification(data.message, 'success');
+            }
+        } else {
+            throw new Error(data.message || 'Gagal menghapus item');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (window.showNotification) {
+            window.showNotification('Terjadi kesalahan. Silakan coba lagi.', 'error');
+        }
+        
+        // Reset button
+        removeBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>';
+        removeBtn.disabled = false;
+    });
+}
+
+function updateTotals(formattedSubtotal, newTotalWithAdmin) {
+    // Update subtotal
+    document.querySelector('.subtotal-amount').textContent = 'Rp ' + formattedSubtotal;
+    
+    // Update total with admin fee
+    document.querySelector('.total-amount').textContent = 'Rp ' + newTotalWithAdmin.toLocaleString('id-ID');
+}
+</script>
+@endpush
 @endsection

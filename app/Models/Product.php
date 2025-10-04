@@ -185,4 +185,10 @@ class Product extends Model
         $headers = @get_headers($url);
         return $headers && strpos($headers[0], '200') !== false;
     }
+
+    //Reviews
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
 }
