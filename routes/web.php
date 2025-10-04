@@ -8,7 +8,7 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\UserController; 
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Admin\AdminProductController;
@@ -21,29 +21,25 @@ use App\Http\Controllers\ProfileOrderController;
 // Auth Routes (Only for guests)
 // ==========================
 Route::middleware('guest')->group(function () {
-    // ====================================================
-    // Login & Registration routes (keep existing)
+    // Login & Registration routes
     Route::get('/sign-in', function () { return view('auth.login'); })->name('signIn');
     Route::post('/sign-in', [LoginController::class, 'login'])->name('login');
     Route::get('/create-account', [RegisterController::class, 'showCreateForm'])->name('create-account');
     Route::post('/create-account', [RegisterController::class, 'storeAccount'])->name('create.account.store');
 
-    // PASSWORD RESET FLOW - PROPER SEPARATION:
-    
-    // Step 1-2: Forgot Password (ForgotPasswordController)
+    // PASSWORD RESET FLOW
+    // Step 1-2: Forgot Password
     Route::get('password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])
         ->name('password.request');
     Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])
         ->name('password.email');
     
-    // Step 3-4: Reset Password (ResetPasswordController) 
+    // Step 3-4: Reset Password
     Route::get('password/reset-session', [ResetPasswordController::class, 'showSessionResetForm'])
         ->name('password.reset-session-form');
     Route::post('password/reset-session', [ResetPasswordController::class, 'resetSessionPassword'])
         ->name('password.reset-session');
 });
-
-
 
 // Logout Route
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -61,13 +57,17 @@ Route::view('/terms-and-conditions', 'pages.terms-and-conditions')->name('termsA
 // ==========================
 Route::get('/shop', [ProductController::class, 'index'])->name('shop');
 
+// Product listing (accessible to all)
 Route::get('/handphone', [ProductController::class, 'handphoneIndex'])->name('handphone.index');
 Route::get('/lightstick', [ProductController::class, 'lightstickIndex'])->name('lightstick.index');
 Route::get('/powerbank', [ProductController::class, 'powerbankIndex'])->name('powerbank.index');
 
-Route::get('/handphone/{id}', [ProductController::class, 'handphoneShow'])->name('handphone.show');
-Route::get('/lightstick/{id}', [ProductController::class, 'lightstickShow'])->name('lightstick.show');
-Route::get('/powerbank/{id}', [ProductController::class, 'powerbankShow'])->name('powerbank.show');
+// Product detail (customer only)
+Route::middleware(['auth', 'user.access'])->group(function () {
+    Route::get('/handphone/{id}', [ProductController::class, 'handphoneShow'])->name('handphone.show');
+    Route::get('/lightstick/{id}', [ProductController::class, 'lightstickShow'])->name('lightstick.show');
+    Route::get('/powerbank/{id}', [ProductController::class, 'powerbankShow'])->name('powerbank.show');
+});
 
 // ==========================
 // Cart Routes (auth required, customer only)
@@ -96,9 +96,7 @@ Route::middleware(['auth', 'user.access'])->prefix('checkout')->name('checkout.'
 // ==========================
 Route::middleware(['auth', 'user.access'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
-    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::post('/profile/edit', [ProfileController::class, 'update'])->name('profile.update');
-      
+    
     // Edit profile
     Route::get('/profile/edit', [RegisterController::class, 'editProfile'])->name('profile.edit');
     Route::post('/profile/edit', [RegisterController::class, 'updateProfile'])->name('profile.update');
@@ -109,6 +107,8 @@ Route::middleware(['auth', 'user.access'])->group(function () {
 
     // Delete account
     Route::delete('/profile/delete', [ProfileController::class, 'deleteAccount'])->name('profile.delete');
+    
+    // Orders
     Route::get('/profile/orders', [ProfileOrderController::class, 'index'])->name('profile.orders');
     Route::get('/profile/orders/{id}', [ProfileOrderController::class, 'show'])->name('profile.orders.show');
 });
@@ -166,14 +166,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/products/bulk-update-stock', [AdminProductController::class, 'bulkUpdateStock'])->name('products.bulkUpdateStock');
     Route::delete('/products/{product}', [AdminProductController::class, 'destroy'])->name('products.destroy');
 
-    Route::post('/products/{id}/reviews', [ReviewController::class, 'store'])
-        ->name('reviews.store')
-        ->middleware('auth');
-
-    Route::get('/lightstick/{id}', [ProductController::class, 'lightstickShow'])
-        ->name('lightstick.show');
-    Route::get('/handphone/{id}', [ProductController::class, 'handphoneShow'])
-        ->name('handphone.show');
-    Route::get('/powerbank/{id}', [ProductController::class, 'powerbankShow'])
-        ->name('powerbank.show');
+    // Reviews (admin only)
+    Route::post('/products/{id}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
 });

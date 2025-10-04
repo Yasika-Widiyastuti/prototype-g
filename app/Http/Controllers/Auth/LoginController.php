@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Helpers\AuditLogHelper; // ✅ tambahkan ini
+use App\Helpers\AuditLogHelper;
 
 class LoginController extends Controller
 {
@@ -26,26 +26,9 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
-
             $user = Auth::user();
 
-<<<<<<< HEAD
-            // ✅ Cek role setelah login
-            if ($user->isAdmin()) {
-                return redirect()->route('admin.dashboard');
-            }
-
-            if ($user->isCustomer()) {
-                return redirect()->route('home');
-            }
-
-            // Kalau gak punya role yang dikenal
-            Auth::logout();
-            return redirect()->route('login')->with('error', 'Role pengguna tidak valid.');
-        }
-
-=======
-            // ✅ catat log login
+            // Catat log login berhasil
             AuditLogHelper::log(
                 $user->id,
                 'login',
@@ -56,12 +39,21 @@ class LoginController extends Controller
                 ]
             );
 
-            return $user->isAdmin()
-                ? redirect()->intended(route('admin.dashboard'))
-                : redirect()->intended(route('home'));
+            // Redirect sesuai role
+            if ($user->isAdmin()) {
+                return redirect()->intended(route('admin.dashboard'));
+            }
+
+            if ($user->isCustomer()) {
+                return redirect()->intended(route('home'));
+            }
+
+            // Kalau role tidak valid
+            Auth::logout();
+            return redirect()->route('signIn')->with('error', 'Role pengguna tidak valid.');
         }
 
-        // ✅ catat log gagal login
+        // Login gagal - catat log
         AuditLogHelper::log(
             null,
             'failed_login',
@@ -70,7 +62,6 @@ class LoginController extends Controller
                 'email' => $request->email,
             ]
         );
->>>>>>> f2982cf035e7511708612174fb50d5cf3afbd011
 
         return back()->withErrors([
             'email' => 'Email atau password salah.',
@@ -79,7 +70,7 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
-        // ✅ catat log logout sebelum session dihancurkan
+        // Catat log logout
         if (Auth::check()) {
             $user = Auth::user();
             AuditLogHelper::log(
@@ -89,8 +80,6 @@ class LoginController extends Controller
                 ['email' => $user->email]
             );
         }
-
-
 
         Auth::logout();
         $request->session()->invalidate();

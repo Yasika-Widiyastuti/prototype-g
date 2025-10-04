@@ -16,22 +16,22 @@ class UserMiddleware
 
         $user = Auth::user();
 
-        // Hanya customer yang boleh lanjut
-        if (!$user->isCustomer()) {
-            // Kalau admin mencoba, redirect ke dashboard admin
-            if ($user->isAdmin()) {
-                return redirect()->route('admin.dashboard')
-                    ->with('error', 'Admin tidak dapat mengakses halaman pengguna.');
-            }
-            // Role lain -> Forbidden
-            abort(403, 'Akses tidak diizinkan.');
-        }
-
         // Jika akun nonaktif, logout dan minta login
         if (!$user->is_active) {
             Auth::logout();
             return redirect()->route('signIn')
                 ->with('error', 'Akun Anda telah dinonaktifkan.');
+        }
+
+        // Hanya customer yang boleh lanjut
+        if (!$user->isCustomer()) {
+            // Kalau admin mencoba akses halaman user
+            if ($user->isAdmin()) {
+                return redirect()->route('admin.dashboard')
+                    ->with('error', 'Admin tidak dapat mengakses halaman customer.');
+            }
+            // Role lain -> Forbidden
+            abort(403, 'Akses tidak diizinkan.');
         }
 
         return $next($request);
