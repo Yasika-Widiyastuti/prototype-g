@@ -4,9 +4,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\UserController; 
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Admin\AdminProductController;
@@ -19,14 +21,31 @@ use App\Http\Controllers\ProfileOrderController;
 // Auth Routes (Only for guests)
 // ==========================
 Route::middleware('guest')->group(function () {
+    // ====================================================
+    // Login & Registration routes (keep existing)
+    Route::get('/sign-in', function () { return view('auth.login'); })->name('signIn');
+    Route::post('/sign-in', [LoginController::class, 'login'])->name('login');
     Route::get('/create-account', [RegisterController::class, 'showCreateForm'])->name('create-account');
     Route::post('/create-account', [RegisterController::class, 'storeAccount'])->name('create.account.store');
 
-    Route::get('/sign-in', fn () => view('auth.login'))->name('signIn');
-    Route::post('/sign-in', [LoginController::class, 'login'])->name('login');
+    // PASSWORD RESET FLOW - PROPER SEPARATION:
+    
+    // Step 1-2: Forgot Password (ForgotPasswordController)
+    Route::get('password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])
+        ->name('password.request');
+    Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])
+        ->name('password.email');
+    
+    // Step 3-4: Reset Password (ResetPasswordController) 
+    Route::get('password/reset-session', [ResetPasswordController::class, 'showSessionResetForm'])
+        ->name('password.reset-session-form');
+    Route::post('password/reset-session', [ResetPasswordController::class, 'resetSessionPassword'])
+        ->name('password.reset-session');
 });
 
-// Logout
+
+
+// Logout Route
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // ==========================
@@ -79,6 +98,16 @@ Route::middleware(['auth', 'user.access'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::post('/profile/edit', [ProfileController::class, 'update'])->name('profile.update');
+      
+    // Edit profile
+    Route::get('/profile/edit', [RegisterController::class, 'editProfile'])->name('profile.edit');
+    Route::post('/profile/edit', [RegisterController::class, 'updateProfile'])->name('profile.update');
+    
+    // Change password
+    Route::get('/profile/change-password', [RegisterController::class, 'showChangePasswordForm'])->name('profile.change-password.form');
+    Route::post('/profile/change-password', [RegisterController::class, 'changePassword'])->name('profile.change-password');
+
+    // Delete account
     Route::delete('/profile/delete', [ProfileController::class, 'deleteAccount'])->name('profile.delete');
     Route::get('/profile/orders', [ProfileOrderController::class, 'index'])->name('profile.orders');
     Route::get('/profile/orders/{id}', [ProfileOrderController::class, 'show'])->name('profile.orders.show');
@@ -101,6 +130,12 @@ Route::get('/debug-cart', function () {
 // Admin Routes
 // ==========================
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    
+    // Audit Logs
+    Route::get('/audit-logs', [App\Http\Controllers\Admin\AdminAuditController::class, 'index'])->name('audit.index');
+    Route::get('/audit-logs/export', [App\Http\Controllers\Admin\AdminAuditController::class, 'export'])->name('audit.export');
+    Route::post('/audit-logs/cleanup', [App\Http\Controllers\Admin\AdminAuditController::class, 'cleanup'])->name('audit.cleanup');
+    
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
