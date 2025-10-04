@@ -32,21 +32,28 @@
         <h2 class="text-2xl font-bold tracking-tight text-gray-900 mb-6">Koleksi Lightstick</h2>
         <div class="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
             @foreach($products as $product)
-            <div class="group relative bg-gray-50 p-4 rounded-lg shadow hover:shadow-lg transition">
+            <div class="group relative bg-gray-50 p-4 rounded-lg shadow hover:shadow-lg transition flex flex-col">
                 <img src="{{ $product['image'] }}" 
-                     alt="{{ $product['name'] }}" 
-                     class="aspect-square w-full rounded-md object-cover group-hover:opacity-90 lg:aspect-auto lg:h-80" />
-                <div class="mt-4 flex justify-between items-start">
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-900">{{ $product['name'] }}</h3>
-                        <p class="mt-1 text-sm text-gray-500">{{ $product['description'] }}</p>
+                    alt="{{ $product['name'] }}" 
+                    class="aspect-square w-full rounded-md object-cover group-hover:opacity-90 lg:aspect-auto lg:h-80" />
+                
+                <div class="mt-4 flex-1 flex flex-col">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">{{ $product['name'] }}</h3>
+                            <p class="mt-1 text-sm text-gray-500">{{ $product['description'] }}</p>
+                        </div>
+                        <p class="text-md font-bold text-blue-600">Rp {{ number_format($product['price']) }} / hari</p>
                     </div>
-                    <p class="text-md font-bold text-blue-600">Rp {{ number_format($product['price'], 0, ',', '.') }} / hari</p>
+
+                    {{-- Spacer biar tombol selalu di bawah --}}
+                    <div class="flex-1"></div>
+
+                    <a href="{{ route('lightstick.show', $product['id']) }}"
+                    class="mt-4 inline-block w-full text-center bg-blue-600 text-white font-semibold py-2 px-4 rounded hover:bg-blue-700 transition">
+                    Lihat Detail
+                    </a>
                 </div>
-                <a href="{{ route('lightstick.show', $product['id']) }}"
-                   class="mt-4 inline-block w-full text-center bg-blue-600 text-white font-semibold py-2 px-4 rounded hover:bg-blue-700 transition">
-                   Lihat Detail
-                </a>
             </div>
             @endforeach
         </div>

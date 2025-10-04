@@ -42,6 +42,18 @@
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
+
+        /* Cart counter animation */
+        .cart-counter {
+            animation: bounceIn 0.3s ease;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+            50% { transform: scale(1.05) rotate(5deg); }
+            70% { transform: scale(0.9) rotate(-2deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
     </style>
     
     @stack('styles')
@@ -158,8 +170,8 @@
                             <div x-show="open" @click.away="open = false"
                                  x-transition
                                  class="absolute right-0 mt-2 w-48 bg-white text-gray-900 rounded-lg shadow-lg py-2 z-50">
-                                <a href="#" class="block px-4 py-2 hover:bg-gray-100">Profile</a>
-                                <a href="#" class="block px-4 py-2 hover:bg-gray-100">Pesanan Saya</a>
+                                <a href="{{ route('profile.index') }}" class="block px-4 py-2 hover:bg-gray-100">Profil</a>
+                                <a href="{{ route('profile.orders') }}" class="block px-4 py-2 hover:bg-gray-100">Pesanan Saya</a>
                                 <div class="border-t border-gray-200"></div>
                                 <form action="{{ route('logout') }}" method="POST">
                                     @csrf
@@ -172,15 +184,15 @@
                     @endguest
 
                     <!-- Shopping Cart -->
-                    <a href="{{ route('checkout') }}" class="relative hover:text-yellow-500 transition">
+                    <a href="{{ route('checkout.index') }}" id="cart-link" class="relative hover:text-yellow-500 transition">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.195.195-.195.512 0 .707L7 18h12M9 19a2 2 0 100 4 2 2 0 000-4zM20 19a2 2 0 100 4 2 2 0 000-4z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.195.195-.195.512 0 .707L7 18h12M9 19a2 2 0 100 4 2 2 0 000-4zM20 19a2 2 0 100 4 2 2 0 000-4z">
+                            </path>
                         </svg>
-                        @if(session('cart_count', 0) > 0)
-                            <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                                {{ session('cart_count', 0) }}
-                            </span>
-                        @endif
+                        <span id="cart-counter" class="cart-counter absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center {{ session('cart_count', 0) > 0 ? '' : 'hidden' }}">
+                            <span id="cart-count">{{ session('cart_count', 0) }}</span>
+                        </span>
                     </a>
                 </div>
 
@@ -221,6 +233,19 @@
                                 <button type="submit" class="w-full text-left px-4 py-2 hover:bg-gray-700 text-red-400 transition">Logout</button>
                             </form>
                         @endguest
+                    </div>
+                    
+                    <!-- Mobile Cart -->
+                    <div class="border-t border-gray-700 pt-2">
+                        <a href="{{ route('checkout.index') }}" class="flex items-center px-4 py-2 hover:bg-gray-700 hover:text-yellow-500 transition">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.195.195-.195.512 0 .707L7 18h12M9 19a2 2 0 100 4 2 2 0 000-4zM20 19a2 2 0 100 4 2 2 0 000-4z"></path>
+                            </svg>
+                            Keranjang 
+                            <span id="mobile-cart-counter" class="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full {{ session('cart_count', 0) > 0 ? '' : 'hidden' }}">
+                                <span id="mobile-cart-count">{{ session('cart_count', 0) }}</span>
+                            </span>
+                        </a>
                     </div>
                 </nav>
             </div>
@@ -362,9 +387,155 @@
 
     @stack('scripts')
     
-    <!-- Loading Animation -->
+    <!-- Global Cart Management Script -->
     <script>
+        // Function to update cart counter
+        function updateCartCounter(count) {
+            const cartCounter = document.getElementById('cart-counter');
+            const cartCount = document.getElementById('cart-count');
+            const mobileCartCounter = document.getElementById('mobile-cart-counter');
+            const mobileCartCount = document.getElementById('mobile-cart-count');
+            
+            if (count > 0) {
+                cartCounter.classList.remove('hidden');
+                mobileCartCounter.classList.remove('hidden');
+                cartCount.textContent = count;
+                mobileCartCount.textContent = count;
+                
+                // Add bounce animation
+                cartCounter.classList.remove('cart-counter');
+                void cartCounter.offsetWidth; // Trigger reflow
+                cartCounter.classList.add('cart-counter');
+            } else {
+                cartCounter.classList.add('hidden');
+                mobileCartCounter.classList.add('hidden');
+            }
+        }
+
+        // Function to show notification
+        function showNotification(message, type = 'success') {
+            // Remove existing notifications
+            const existingNotification = document.querySelector('.notification-toast');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification-toast fixed bottom-4 right-4 px-6 py-4 rounded-lg shadow-lg z-50 max-w-sm transition-all duration-300 transform translate-x-full ${
+                type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        ${type === 'success' 
+                            ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>'
+                            : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>'
+                        }
+                    </svg>
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 hover:opacity-70">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Slide in animation
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Remove notification after 4 seconds
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, 4000);
+        }
+
+        // Global add to cart handler
+        function handleAddToCart(form, button) {
+            const originalText = button.innerHTML;
+            
+            // Show loading state
+            button.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Menambahkan...';
+            button.disabled = true;
+            button.classList.add('opacity-75', 'cursor-not-allowed');
+            
+            // Submit form via fetch
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update cart counter (shows unique items, not total quantity)
+                    updateCartCounter(data.cart_count);
+                    
+                    // Show different success message based on whether product already existed
+                    let successText = '✓ Ditambahkan!';
+                    if (data.is_existing && data.product_quantity > 1) {
+                        successText = `✓ Qty: ${data.product_quantity}`;
+                    }
+                    
+                    // Show success state
+                    button.innerHTML = successText;
+                    button.className = button.className.replace('bg-blue-600', 'bg-green-600').replace('hover:bg-blue-700', 'hover:bg-green-700');
+                    
+                    // Show success notification with quantity info
+                    let notificationMessage = data.message || 'Produk berhasil ditambahkan ke keranjang!';
+                    showNotification(notificationMessage, 'success');
+                    
+                    // Reset button after 3 seconds
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                        button.className = button.className.replace('bg-green-600', 'bg-blue-600').replace('hover:bg-green-700', 'hover:bg-blue-700');
+                        button.classList.remove('opacity-75', 'cursor-not-allowed');
+                    }, 3000);
+                } else {
+                    throw new Error(data.message || 'Gagal menambahkan ke keranjang');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification(error.message || 'Terjadi kesalahan. Silakan coba lagi.', 'error');
+                
+                // Reset button
+                button.innerHTML = originalText;
+                button.disabled = false;
+                button.classList.remove('opacity-75', 'cursor-not-allowed');
+            });
+        }
+
+        // Auto-attach event listeners to all add to cart forms
         document.addEventListener('DOMContentLoaded', function() {
+            // Handle all forms with action containing "cart/add"
+            const addToCartForms = document.querySelectorAll('form[action*="cart/add"]');
+            
+            addToCartForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const button = this.querySelector('button[type="submit"]');
+                    if (button) {
+                        handleAddToCart(this, button);
+                    }
+                });
+            });
+            
+            // Loading Animation
             const elements = document.querySelectorAll('.loading');
             elements.forEach((element, index) => {
                 setTimeout(() => {

@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Review;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -81,8 +82,12 @@ class ProductController extends Controller
                                          'description' => $item->description
                                      ];
                                  });
-        
-        return view('handphone.show', compact('product', 'relatedProducts'));
+        $reviews = Review::where('product_id', $id)
+        ->with('user')
+        ->latest()
+        ->get();
+
+        return view('handphone.show', compact('product', 'relatedProducts', 'reviews'));
     }
 
     // Lightstick methods
@@ -140,8 +145,12 @@ class ProductController extends Controller
                                          'description' => $item->description
                                      ];
                                  });
-        
-        return view('lightstick.show', compact('product', 'relatedProducts'));
+        $reviews = Review::where('product_id', $id)
+        ->with('user')
+        ->latest()
+        ->get();
+
+        return view('lightstick.show', compact('product', 'relatedProducts', 'reviews'));
     }
 
     // Powerbank methods
@@ -199,14 +208,30 @@ class ProductController extends Controller
                                          'description' => $item->description
                                      ];
                                  });
-        
-        return view('powerbank.show', compact('product', 'relatedProducts'));
+        $reviews = Review::where('product_id', $id)
+        ->with('user')
+        ->latest()
+        ->get();
+
+        return view('powerbank.show', compact('product', 'relatedProducts', 'reviews'));
     }
 
-    // Add to Cart method
+    // Add to Cart method - FIXED VERSION
     public function addToCart(Request $request, $id)
     {
         try {
+            // Check if user is authenticated
+            if (!auth()->check()) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false, 
+                        'message' => 'Silakan login terlebih dahulu',
+                        'redirect' => route('signIn')
+                    ], 401);
+                }
+                return redirect()->route('signIn')->with('error', 'Silakan login terlebih dahulu');
+            }
+
             // Determine product category based on current route
             $routeName = $request->route()->getName();
             $product = null;
@@ -223,8 +248,18 @@ class ProductController extends Controller
             }
 
             if (!$product || !$product->is_available || $product->stock <= 0) {
-                \Log::error('Product not found or unavailable', ['id' => $id, 'route' => $routeName]);
-                return response()->json(['success' => false, 'message' => 'Produk tidak tersedia'], 404);
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false, 
+                        'message' => 'Produk tidak tersedia atau stok habis'
+                    ], 404);
+                }
+                return redirect()->back()->with('error', 'Produk tidak tersedia atau stok habis');
+            }
+
+            // Start session if not started
+            if (!session()->isStarted()) {
+                session()->start();
             }
 
             // Get current cart from session
@@ -232,18 +267,20 @@ class ProductController extends Controller
             $cartKey = $category . '_' . $id;
 
             \Log::info('Before adding to cart:', [
-                'product' => $product->toArray(),
-                'category' => $category,
                 'cart_key' => $cartKey,
-                'existing_cart_count' => count($cart)
+                'existing_cart' => $cart,
+                'cart_count_before' => count($cart)
             ]);
 
-            // If product already in cart, increase quantity
-            if (isset($cart[$cartKey])) {
-                $cart[$cartKey]['quantity']++;
-                \Log::info('Increased quantity for existing item');
+            // Check if product already exists in cart
+            $isExisting = isset($cart[$cartKey]);
+            
+            if ($isExisting) {
+                // Product already in cart, increase quantity by 1
+                $cart[$cartKey]['quantity'] += 1;
+                $message = 'Quantity produk berhasil ditambahkan! (Jumlah: ' . $cart[$cartKey]['quantity'] . ')';
             } else {
-                // Add new product to cart with database data
+                // Add new product to cart with quantity 1
                 $cart[$cartKey] = [
                     'id' => $product->id,
                     'name' => $product->name,
@@ -253,41 +290,39 @@ class ProductController extends Controller
                     'quantity' => 1,
                     'description' => $product->description ?? ''
                 ];
-                \Log::info('Added new item to cart', ['item' => $cart[$cartKey]]);
+                $message = 'Produk berhasil ditambahkan ke keranjang!';
             }
 
-            // Force session start if not started
-            if (!session()->isStarted()) {
-                session()->start();
-            }
-
-            // Update cart in session with explicit put
+            // Update session with new cart
             session()->put('cart', $cart);
-            session()->put('cart_count', count($cart));
             
-            // Force session save - THIS IS CRITICAL
+            // Calculate total unique items (not quantity)
+            $totalUniqueItems = count($cart);
+            session()->put('cart_count', $totalUniqueItems);
+            
+            // Force save session
             session()->save();
-            
-            // Verify session was saved
-            $verifyCart = session('cart', []);
-            $verifyCount = session('cart_count', 0);
-            
-            \Log::info('After session save verification:', [
-                'saved_cart_count' => count($verifyCart),
-                'saved_cart_count_session' => $verifyCount,
-                'session_id' => session()->getId()
+
+            \Log::info('After adding to cart:', [
+                'cart_key' => $cartKey,
+                'updated_cart' => $cart,
+                'cart_count_after' => count($cart),
+                'is_existing' => $isExisting,
+                'product_quantity' => $cart[$cartKey]['quantity']
             ]);
 
             if ($request->expectsJson()) {
                 return response()->json([
-                    'success' => true, 
-                    'message' => 'Produk berhasil ditambahkan ke keranjang',
-                    'cart_count' => count($cart),
-                    'debug_cart' => $verifyCart
+                    'success' => true,
+                    'message' => $message,
+                    'cart_count' => $totalUniqueItems,
+                    'product_name' => $product->name,
+                    'product_quantity' => $cart[$cartKey]['quantity'],
+                    'is_existing' => $isExisting
                 ]);
             }
 
-            return redirect()->back()->with('success', 'Produk berhasil ditambahkan ke keranjang!');
+            return redirect()->back()->with('success', $message);
             
         } catch (\Exception $e) {
             \Log::error('Error adding to cart:', [
@@ -295,10 +330,14 @@ class ProductController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             
-            return response()->json([
-                'success' => false, 
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Terjadi kesalahan sistem. Silakan coba lagi.'
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', 'Terjadi kesalahan. Silakan coba lagi.');
         }
     }
 }

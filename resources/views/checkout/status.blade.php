@@ -138,7 +138,7 @@
                 </a>
                 
                 @if ($payment->status == 'failed')
-                <a href="{{ route('payment.confirmation') }}" 
+                <a href="{{ route('checkout.confirmation') }}" 
                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition">
                     Coba Upload Ulang
                 </a>

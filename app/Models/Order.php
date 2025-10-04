@@ -28,6 +28,7 @@ class Order extends Model
         'total_amount' => 'decimal:2',
     ];
 
+    // 🔗 Relasi
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -38,9 +39,23 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
-    public static function generateOrderNumber()
+    // 💬 Accessor tambahan
+    public function getTotalAmountFormattedAttribute()
     {
-        return 'ORDER-' . date('Y') . '-' . str_pad(self::count() + 1, 6, '0', STR_PAD_LEFT);
+        return 'Rp ' . number_format($this->total_amount, 0, ',', '.');
+    }
+
+    public function getStatusTextAttribute()
+    {
+        $statusTexts = [
+            'pending' => 'Menunggu Pembayaran',
+            'paid' => 'Sudah Dibayar',
+            'confirmed' => 'Dikonfirmasi',
+            'completed' => 'Selesai',
+            'cancelled' => 'Dibatalkan',
+        ];
+
+        return $statusTexts[$this->status] ?? ucfirst($this->status);
     }
 
     public function getStatusBadgeAttribute()
@@ -49,10 +64,22 @@ class Order extends Model
             'pending' => 'bg-yellow-100 text-yellow-800',
             'paid' => 'bg-blue-100 text-blue-800',
             'confirmed' => 'bg-green-100 text-green-800',
-            'completed' => 'bg-gray-100 text-gray-800',
+            'completed' => 'bg-green-100 text-green-800',
             'cancelled' => 'bg-red-100 text-red-800',
         ];
 
         return $badges[$this->status] ?? 'bg-gray-100 text-gray-800';
+    }
+
+    // 🧠 Auto generate order number
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($order) {
+            if (!$order->order_number) {
+                $order->order_number = 'ORD-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
+            }
+        });
     }
 }
