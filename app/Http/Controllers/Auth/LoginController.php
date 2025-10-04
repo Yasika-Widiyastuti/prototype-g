@@ -19,8 +19,23 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
-            return redirect()->intended(route('home'));
+
+            $user = Auth::user();
+
+            // ✅ Cek role setelah login
+            if ($user->isAdmin()) {
+                return redirect()->route('admin.dashboard');
+            }
+
+            if ($user->isCustomer()) {
+                return redirect()->route('home');
+            }
+
+            // Kalau gak punya role yang dikenal
+            Auth::logout();
+            return redirect()->route('login')->with('error', 'Role pengguna tidak valid.');
         }
+
 
         return back()->withErrors([
             'email' => 'Email atau password salah.',

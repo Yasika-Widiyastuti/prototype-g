@@ -58,6 +58,8 @@ class RegisterController extends Controller
             'ktp_path' => $ktpPath,
             'kk_path' => $kkPath,
             'email_verified_at' => now(),
+            'role' => 'customer', // ✅ tambahkan ini
+            'is_active' => true, // opsional, kalau mau akun aktif langsung
         ]);
 
         return redirect()->route('signIn')->with('success', 'Akun berhasil dibuat! Silakan login.');

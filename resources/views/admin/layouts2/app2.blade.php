@@ -69,9 +69,6 @@
             </nav>
 
             <div class="absolute bottom-0 w-64 p-4">
-                <a href="{{ route('home') }}" class="block text-gray-300 hover:text-white text-sm mb-2">
-                    ← Kembali ke Website
-                </a>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
                     <button type="submit" class="text-red-400 hover:text-red-300 text-sm">

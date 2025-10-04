@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Tambahkan ini
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'user.access' => \App\Http\Middleware\UserMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

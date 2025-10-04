@@ -51,55 +51,42 @@ Route::get('/lightstick/{id}', [ProductController::class, 'lightstickShow'])->na
 Route::get('/powerbank/{id}', [ProductController::class, 'powerbankShow'])->name('powerbank.show');
 
 // ==========================
-// Cart Routes (auth required)
+// Cart Routes (auth required, customer only)
 // ==========================
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'user.access'])->group(function () {
     Route::post('/cart/add/handphone/{id}', [ProductController::class, 'addToCart'])->name('cart.add.handphone');
     Route::post('/cart/add/lightstick/{id}', [ProductController::class, 'addToCart'])->name('cart.add.lightstick');
     Route::post('/cart/add/powerbank/{id}', [ProductController::class, 'addToCart'])->name('cart.add.powerbank');
 });
 
 // ==========================
-// Checkout Flow (auth required)
+// Checkout Flow (auth required, customer only)
 // ==========================
-Route::middleware('auth')->prefix('checkout')->name('checkout.')->group(function () {
-    // Step 1: Checkout
+Route::middleware(['auth', 'user.access'])->prefix('checkout')->name('checkout.')->group(function () {
     Route::get('/', [CheckoutController::class, 'index'])->name('index');
-    // Step 2: Payment (pilih bank)
     Route::get('/payment', [CheckoutController::class, 'payment'])->name('payment');
     Route::post('/payment', [CheckoutController::class, 'processPayment'])->name('payment.submit');
-    // Step 3: Confirmation
     Route::get('/confirmation', [CheckoutController::class, 'confirmation'])->name('confirmation');
-    // Step 4: Upload bukti transfer
     Route::post('/status', [CheckoutController::class, 'paymentStatus'])->name('status');
-    // Cart management routes
     Route::post('/update-quantity', [CheckoutController::class, 'updateQuantity'])->name('update-quantity');
     Route::post('/remove-item', [CheckoutController::class, 'removeItem'])->name('remove-item');
 });
 
 // ==========================
-// User Profile (auth required)
+// User Profile (auth required, customer only)
 // ==========================
-Route::middleware('auth')->group(function () {
-    // Show profile
+Route::middleware(['auth', 'user.access'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
-      
-    // Edit profile
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::post('/profile/edit', [ProfileController::class, 'update'])->name('profile.update');
-    
-    // Delete account
     Route::delete('/profile/delete', [ProfileController::class, 'deleteAccount'])->name('profile.delete');
-
-    // 👇 Tambahin ini untuk Pesanan Saya
     Route::get('/profile/orders', [ProfileOrderController::class, 'index'])->name('profile.orders');
     Route::get('/profile/orders/{id}', [ProfileOrderController::class, 'show'])->name('profile.orders.show');
 });
 
-
 // ==========================
 // Debug Route (auth required)
-// ==========================
+// ==========================   
 Route::get('/debug-cart', function () {
     return response()->json([
         'cart' => session('cart', []),
@@ -107,7 +94,8 @@ Route::get('/debug-cart', function () {
         'all_session' => session()->all(),
         'session_id' => session()->getId()
     ]);
-})->middleware('auth');
+})->middleware(['auth','user.access']);
+
 
 // ==========================
 // Admin Routes
