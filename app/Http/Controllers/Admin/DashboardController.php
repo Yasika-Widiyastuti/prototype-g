@@ -54,12 +54,40 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        // 🆕 Barang yang sedang disewa (status: confirmed)
+        $ongoing_rentals = Order::where('status', 'confirmed')
+            ->with(['user', 'orderItems.product'])
+            ->orderBy('rental_date', 'asc')
+            ->get()
+            ->map(function($order) {
+                // Hitung tanggal harus kembali
+                $rental_end_date = $order->rental_date 
+                    ? Carbon::parse($order->rental_date)->addDays($order->rental_days ?? 0)
+                    : null;
+                
+                // Cek apakah sudah lewat deadline
+                $is_overdue = $rental_end_date && $rental_end_date->isPast();
+                
+                // Hitung sisa hari
+                $days_remaining = $rental_end_date 
+                    ? Carbon::now()->diffInDays($rental_end_date, false)
+                    : null;
+
+                return [
+                    'order' => $order,
+                    'rental_end_date' => $rental_end_date,
+                    'is_overdue' => $is_overdue,
+                    'days_remaining' => $days_remaining,
+                ];
+            });
+
         return view('admin.dashboard', compact(
             'stats', 
             'recent_orders', 
             'low_stock_products', 
             'recent_users',
-            'pending_payments'
+            'pending_payments',
+            'ongoing_rentals'
         ));
     }
 }

@@ -8,7 +8,10 @@
     <h2 class="text-xl font-semibold mb-4">{{ $product->name }}</h2>
 
     <div class="mb-4">
-        <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-auto rounded">
+        <img src="{{ asset('storage/' . $product->image_url) }}" 
+             alt="{{ $product->name }}" 
+             class="w-full h-auto rounded"
+             onerror="this.src='{{ asset('images/placeholder.png') }}'">
     </div>
 
     <p><strong>Kategori:</strong> {{ $product->category }}</p>

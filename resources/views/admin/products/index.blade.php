@@ -101,8 +101,9 @@
                         <div class="flex items-center">
                             <div class="flex-shrink-0 h-12 w-12">
                                 <img class="h-12 w-12 rounded-lg object-cover" 
-                                     src="{{ $product->image_url }}" 
-                                     alt="{{ $product->name }}">
+                                     src="{{ asset('storage/' . $product->image_url) }}" 
+                                     alt="{{ $product->name }}"
+                                     onerror="this.src='{{ asset('images/placeholder.png') }}'">
                             </div>
                             <div class="ml-4">
                                 <div class="text-sm font-medium text-gray-900">{{ $product->name }}</div>

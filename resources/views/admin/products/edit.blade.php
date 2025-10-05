@@ -16,7 +16,7 @@
 </div>
 
 <div class="max-w-2xl">
-    <form action="{{ route('admin.products.update', $product) }}" method="POST" class="bg-white rounded-lg shadow p-6">
+    <form action="{{ route('admin.products.update', $product) }}" method="POST" enctype="multipart/form-data" class="bg-white rounded-lg shadow p-6">
         @csrf
         @method('PUT')
 
@@ -81,17 +81,38 @@
                 @enderror
             </div>
 
-            <!-- URL Gambar -->
-            <div>
-                <label for="image_url" class="block text-sm font-medium text-gray-700 mb-2">
-                    URL Gambar <span class="text-red-500">*</span>
+            <!-- Upload Gambar -->
+            <div class="md:col-span-2">
+                <label for="image" class="block text-sm font-medium text-gray-700 mb-2">
+                    Gambar Produk
                 </label>
-                <input type="url" id="image_url" name="image_url" value="{{ old('image_url', $product->image_url) }}"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('image_url') border-red-500 @enderror"
-                       placeholder="https://example.com/gambar.jpg">
-                @error('image_url')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
+                
+                <!-- Current Image Preview -->
+                @if($product->image_url)
+                <div class="mb-3">
+                    <p class="text-sm text-gray-600 mb-2">Gambar saat ini:</p>
+                    <img src="{{ asset('storage/' . $product->image_url) }}" 
+                         alt="{{ $product->name }}" 
+                         class="w-32 h-32 object-cover rounded-lg border-2 border-gray-300">
+                </div>
+                @endif
+
+                <div class="flex items-start space-x-4">
+                    <div class="flex-1">
+                        <input type="file" id="image" name="image" accept="image/*"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('image') border-red-500 @enderror"
+                               onchange="previewImage(event)">
+                        <p class="mt-1 text-sm text-gray-500">Format: JPG, PNG, GIF. Maksimal 2MB. Kosongkan jika tidak ingin mengubah gambar.</p>
+                        @error('image')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <!-- New Image Preview -->
+                    <div id="imagePreviewContainer" class="hidden">
+                        <p class="text-sm text-gray-600 mb-2">Preview baru:</p>
+                        <img id="imagePreview" src="" alt="Preview" class="w-32 h-32 object-cover rounded-lg border-2 border-blue-500">
+                    </div>
+                </div>
             </div>
 
             <!-- Deskripsi -->
@@ -115,6 +136,7 @@
                 <input type="text" id="features" name="features" value="{{ old('features', implode(', ', $product->features ?? [])) }}"
                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                        placeholder="Bluetooth, Wireless, Fast Charging">
+                <p class="mt-1 text-sm text-gray-500">Contoh: Bluetooth, Wireless, Fast Charging</p>
                 @error('features')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
@@ -146,4 +168,23 @@
         </div>
     </form>
 </div>
+
+<script>
+    function previewImage(event) {
+        const file = event.target.files[0];
+        const preview = document.getElementById('imagePreview');
+        const container = document.getElementById('imagePreviewContainer');
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                container.classList.remove('hidden');
+            }
+            reader.readAsDataURL(file);
+        } else {
+            container.classList.add('hidden');
+        }
+    }
+</script>
 @endsection

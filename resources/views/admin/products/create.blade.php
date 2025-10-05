@@ -16,7 +16,7 @@
 </div>
 
 <div class="max-w-2xl">
-    <form action="{{ route('admin.products.store') }}" method="POST" class="bg-white rounded-lg shadow p-6">
+    <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" class="bg-white rounded-lg shadow p-6">
         @csrf
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -80,17 +80,26 @@
                 @enderror
             </div>
 
-            <!-- URL Gambar -->
-            <div>
-                <label for="image_url" class="block text-sm font-medium text-gray-700 mb-2">
-                    URL Gambar <span class="text-red-500">*</span>
+            <!-- Upload Gambar -->
+            <div class="md:col-span-2">
+                <label for="image" class="block text-sm font-medium text-gray-700 mb-2">
+                    Gambar Produk <span class="text-red-500">*</span>
                 </label>
-                <input type="url" id="image_url" name="image_url" value="{{ old('image_url') }}"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('image_url') border-red-500 @enderror"
-                       placeholder="https://example.com/gambar.jpg">
-                @error('image_url')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
+                <div class="flex items-start space-x-4">
+                    <div class="flex-1">
+                        <input type="file" id="image" name="image" accept="image/*"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('image') border-red-500 @enderror"
+                               onchange="previewImage(event)">
+                        <p class="mt-1 text-sm text-gray-500">Format: JPG, PNG, GIF. Maksimal 2MB</p>
+                        @error('image')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <!-- Preview Image -->
+                    <div id="imagePreviewContainer" class="hidden">
+                        <img id="imagePreview" src="" alt="Preview" class="w-32 h-32 object-cover rounded-lg border-2 border-gray-300">
+                    </div>
+                </div>
             </div>
 
             <!-- Deskripsi -->
@@ -124,7 +133,7 @@
             <div class="md:col-span-2">
                 <div class="flex items-center">
                     <input type="checkbox" id="is_available" name="is_available" value="1"
-                           {{ old('is_available') ? 'checked' : '' }}
+                           {{ old('is_available', true) ? 'checked' : '' }}
                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                     <label for="is_available" class="ml-2 block text-sm text-gray-900">
                         Produk tersedia untuk disewa
@@ -148,15 +157,21 @@
 </div>
 
 <script>
-    // Preview gambar
-    document.getElementById('image_url').addEventListener('change', function() {
-        const url = this.value;
-        const preview = document.getElementById('image_preview');
+    function previewImage(event) {
+        const file = event.target.files[0];
+        const preview = document.getElementById('imagePreview');
+        const container = document.getElementById('imagePreviewContainer');
         
-        if (url && preview) {
-            preview.src = url;
-            preview.style.display = 'block';
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                container.classList.remove('hidden');
+            }
+            reader.readAsDataURL(file);
+        } else {
+            container.classList.add('hidden');
         }
-    });
+    }
 </script>
 @endsection

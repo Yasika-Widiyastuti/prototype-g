@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class AdminProductController extends Controller
 {
@@ -63,9 +65,33 @@ class AdminProductController extends Controller
             'category' => 'required|string|max:255',
             'price' => 'required|numeric',
             'stock' => 'required|integer',
-            'image_url' => 'nullable|url',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // max 2MB
             'description' => 'nullable|string',
+            'features' => 'nullable|string',
+            'is_available' => 'nullable|boolean',
         ]);
+
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            
+            // Bersihkan nama file dari karakter special dan spasi
+            $originalName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
+            $cleanName = Str::slug($originalName); // Ubah ke format slug (lowercase, tanpa spasi)
+            $extension = $image->getClientOriginalExtension();
+            $imageName = time() . '_' . $cleanName . '.' . $extension;
+            
+            $imagePath = $image->storeAs('products', $imageName, 'public');
+            $validated['image_url'] = $imagePath;
+        }
+
+        // Convert features string to array
+        if (isset($validated['features'])) {
+            $validated['features'] = array_map('trim', explode(',', $validated['features']));
+        }
+
+        // Set is_available
+        $validated['is_available'] = $request->has('is_available') ? true : false;
 
         Product::create($validated);
 
@@ -87,9 +113,39 @@ class AdminProductController extends Controller
             'category' => 'required|string|max:255',
             'price' => 'required|numeric',
             'stock' => 'required|integer',
-            'image_url' => 'nullable|url',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'description' => 'nullable|string',
+            'features' => 'nullable|string',
+            'is_available' => 'nullable|boolean',
         ]);
+
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($product->image_url && Storage::disk('public')->exists($product->image_url)) {
+                Storage::disk('public')->delete($product->image_url);
+            }
+
+            $image = $request->file('image');
+            
+            // Bersihkan nama file dari karakter special dan spasi
+            $originalName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
+            $cleanName = Str::slug($originalName); // Ubah ke format slug (lowercase, tanpa spasi)
+            $extension = $image->getClientOriginalExtension();
+            $imageName = time() . '_' . $cleanName . '.' . $extension;
+            
+            $imagePath = $image->storeAs('products', $imageName, 'public');
+            chmod(storage_path('app/public/' . $imagePath), 0644);
+            $validated['image_url'] = $imagePath;
+        }
+
+        // Convert features string to array
+        if (isset($validated['features'])) {
+            $validated['features'] = array_map('trim', explode(',', $validated['features']));
+        }
+
+        // Set is_available
+        $validated['is_available'] = $request->has('is_available') ? true : false;
 
         $product->update($validated);
 
@@ -101,7 +157,7 @@ class AdminProductController extends Controller
     {
         $product->is_available = !$product->is_available;
         $product->save();
-        return redirect()->route('admin.products.index');
+        return redirect()->route('admin.products.index')->with('success', 'Status produk berhasil diubah');
     }
 
     // Bulk update stock
@@ -110,13 +166,18 @@ class AdminProductController extends Controller
         $productIds = $request->input('product_ids');
         $newStock = $request->input('new_stock');
         Product::whereIn('id', $productIds)->update(['stock' => $newStock]);
-        return redirect()->route('admin.products.index');
+        return redirect()->route('admin.products.index')->with('success', 'Stok berhasil diupdate');
     }
+
     // Hapus produk
     public function destroy(Product $product)
     {
+        // Delete image if exists
+        if ($product->image_url && Storage::disk('public')->exists($product->image_url)) {
+            Storage::disk('public')->delete($product->image_url);
+        }
+
         $product->delete();
         return redirect()->route('admin.products.index')->with('success', 'Produk berhasil dihapus');
     }
-
 }
