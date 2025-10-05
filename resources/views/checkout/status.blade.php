@@ -31,7 +31,6 @@
                 </div>
 
                 <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8">
-                    <h3 class="text-lg font-semibold text-yellow-800 mb-4">Apa yang terjadi selanjutnya?</h3>
                     <div class="space-y-4">
                         <div class="flex items-start">
                             <div class="flex-shrink-0 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-4 mt-0.5">1</div>

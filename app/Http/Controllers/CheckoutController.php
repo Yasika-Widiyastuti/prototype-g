@@ -65,7 +65,7 @@ class CheckoutController extends Controller
                 'item_removed' => $request->action === 'decrease' && !isset($cart[$cartKey]),
                 'new_quantity' => isset($cart[$cartKey]) ? $cart[$cartKey]['quantity'] : 0,
                 'message' => isset($cart[$cartKey]) 
-                    ? 'Quantity berhasil diupdate' 
+                    ? 'Barang berhasil diupdate' 
                     : 'Produk berhasil dihapus dari keranjang'
             ]);
         }
