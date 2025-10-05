@@ -62,58 +62,62 @@
                 @else
                 <div class="space-y-4" id="cart-items-container">
                     @foreach($cartItems as $cartKey => $item)
-                    <div class="cart-item flex items-center justify-between p-6 border border-gray-200 rounded-lg bg-white shadow-sm" data-cart-key="{{ $cartKey }}">
-                        <div class="flex items-center flex-1">
-                            <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}" class="w-20 h-20 object-cover rounded-lg">
-                            <div class="ml-6">
+                    @php
+                        $duration = $item['duration'] ?? 1;
+                        $itemSubtotal = $item['price'] * $item['quantity'] * $duration;
+                    @endphp
+                    <div class="cart-item border border-gray-200 rounded-lg bg-white shadow-sm p-6" data-cart-key="{{ $cartKey }}">
+                        <div class="flex items-start gap-6">
+                            <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}" class="w-20 h-20 object-cover rounded-lg flex-shrink-0">
+                            
+                            <div class="flex-1">
                                 <h3 class="text-lg font-medium text-gray-900">{{ $item['name'] }}</h3>
-                                <p class="text-sm text-gray-500 mb-2">{{ $item['category'] }}</p>
+                                <p class="text-sm text-gray-500 mb-2">{{ $item['category'] ?? 'Kategori Tidak Diketahui' }}</p>
                                 <p class="text-sm font-medium text-blue-600">Rp {{ number_format($item['price'], 0, ',', '.') }} / hari</p>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-center space-x-4">
-                            <!-- Quantity Controls -->
-                            <div class="flex items-center space-x-3">
-                                <button type="button" 
-                                        class="quantity-btn decrease-btn w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                                        data-action="decrease"
-                                        data-cart-key="{{ $cartKey }}">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
-                                    </svg>
-                                </button>
                                 
-                                <span class="quantity-display text-lg font-medium text-gray-900 min-w-8 text-center" data-quantity="{{ $item['quantity'] }}">
-                                    {{ $item['quantity'] }}
-                                </span>
-                                
-                                <button type="button" 
-                                        class="quantity-btn increase-btn w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 transition"
-                                        data-action="increase"
-                                        data-cart-key="{{ $cartKey }}">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                    </svg>
-                                </button>
+                                <!-- Quantity Control -->
+                                <div class="mt-4">
+                                    <label class="block text-xs text-gray-600 mb-1">Jumlah</label>
+                                    <div class="flex items-center space-x-2">
+                                        <button type="button" 
+                                                class="quantity-btn decrease-btn w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                                data-action="decrease"
+                                                data-cart-key="{{ $cartKey }}">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                                            </svg>
+                                        </button>
+                                        
+                                        <span class="quantity-display text-lg font-medium text-gray-900 min-w-8 text-center" data-quantity="{{ $item['quantity'] }}">
+                                            {{ $item['quantity'] }}
+                                        </span>
+                                        
+                                        <button type="button" 
+                                                class="quantity-btn increase-btn w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 transition"
+                                                data-action="increase"
+                                                data-cart-key="{{ $cartKey }}">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                             
-                            <!-- Item Total -->
-                            <div class="text-right min-w-24">
+                            <!-- Total & Remove -->
+                            <div class="text-right flex flex-col items-end gap-2">
                                 <p class="item-total text-lg font-bold text-gray-900">
-                                    Rp {{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}
+                                    Rp {{ number_format($itemSubtotal, 0, ',', '.') }}
                                 </p>
+                                <button type="button" 
+                                        class="remove-btn text-red-600 hover:text-red-800 p-2 rounded-full hover:bg-red-50 transition"
+                                        data-cart-key="{{ $cartKey }}"
+                                        title="Hapus dari keranjang">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
                             </div>
-                            
-                            <!-- Remove Button -->
-                            <button type="button" 
-                                    class="remove-btn text-red-600 hover:text-red-800 p-2 rounded-full hover:bg-red-50 transition"
-                                    data-cart-key="{{ $cartKey }}"
-                                    title="Hapus dari keranjang">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                            </button>
                         </div>
                     </div>
                     @endforeach
@@ -122,6 +126,61 @@
             </div>
 
             @if(!empty($cartItems))
+            @php
+                $initialDuration = $cartItems[array_key_first($cartItems)]['duration'] ?? 1;
+            @endphp
+            <!-- Durasi Peminjaman Section -->
+            <div class="mb-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">Durasi Peminjaman</h2>
+                <div class="bg-white border border-gray-200 rounded-lg p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <svg class="w-5 h-5 inline-block mr-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                Tanggal Mulai Sewa
+                            </label>
+                            <input type="date" 
+                                   id="start-date" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                                   min="{{ date('Y-m-d') }}"
+                                   value="{{ $startDate }}">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <svg class="w-5 h-5 inline-block mr-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                Tanggal Selesai Sewa
+                            </label>
+                            <input type="date" 
+                                   id="end-date" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                                   min="{{ date('Y-m-d') }}"
+                                   value="{{ $endDate }}">
+                        </div>
+                    </div>
+                    <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="text-sm font-medium text-gray-700">Total Durasi:</span>
+                            </div>
+                            <span id="duration-display" class="text-lg font-bold text-blue-600">{{ $initialDuration }} Hari</span>
+                        </div>
+                        <p class="text-xs text-gray-600 mt-2">
+                            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Maksimal durasi sewa adalah 30 hari
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <div class="bg-gray-50 rounded-lg p-6 mb-8">
                 <h3 class="text-lg font-bold text-gray-900 mb-4">Ringkasan Pembayaran</h3>
                 <div class="space-y-2">
@@ -160,6 +219,98 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Date picker handling
+    const startDateInput = document.getElementById('start-date');
+    const endDateInput = document.getElementById('end-date');
+    const durationDisplay = document.getElementById('duration-display');
+
+    function calculateDuration() {
+        const startDate = new Date(startDateInput.value);
+        const endDate = new Date(endDateInput.value);
+        
+        if (startDate && endDate && endDate >= startDate) {
+            const diffTime = Math.abs(endDate - startDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            
+            // Maximum 30 days
+            if (diffDays > 30) {
+                alert('Maksimal durasi sewa adalah 30 hari');
+                const maxEndDate = new Date(startDate);
+                maxEndDate.setDate(maxEndDate.getDate() + 29);
+                endDateInput.value = maxEndDate.toISOString().split('T')[0];
+                return 30;
+            }
+            
+            return diffDays;
+        }
+        return 1;
+    }
+
+    function updateDurationDisplay() {
+        const duration = calculateDuration();
+        durationDisplay.textContent = `${duration} Hari`;
+        updateAllItemsDuration();
+    }
+
+    function updateAllItemsDuration() {
+        fetch('{{ route("checkout.update-all-duration") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                start_date: startDateInput.value,
+                end_date: endDateInput.value
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update all item totals
+                document.querySelectorAll('.cart-item').forEach(cartItem => {
+                    const cartKey = cartItem.getAttribute('data-cart-key');
+                    if (data.items && data.items[cartKey]) {
+                        const itemData = data.items[cartKey];
+                        const itemTotal = cartItem.querySelector('.item-total');
+                        itemTotal.textContent = 'Rp ' + itemData.formatted_subtotal;
+                    }
+                });
+                
+                // Update totals
+                updateTotals(data.formatted_total, data.new_total + 5000);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    startDateInput.addEventListener('change', function() {
+        // Update minimum end date
+        endDateInput.min = this.value;
+        
+        // If end date is before start date, update it
+        if (new Date(endDateInput.value) < new Date(this.value)) {
+            const nextDay = new Date(this.value);
+            nextDay.setDate(nextDay.getDate() + 1);
+            endDateInput.value = nextDay.toISOString().split('T')[0];
+        }
+        
+        updateDurationDisplay();
+    });
+
+    endDateInput.addEventListener('change', function() {
+        // Ensure end date is not before start date
+        if (new Date(this.value) < new Date(startDateInput.value)) {
+            alert('Tanggal selesai tidak boleh sebelum tanggal mulai');
+            const nextDay = new Date(startDateInput.value);
+            nextDay.setDate(nextDay.getDate() + 1);
+            this.value = nextDay.toISOString().split('T')[0];
+        }
+        
+        updateDurationDisplay();
+    });
+
     // Handle quantity buttons
     document.querySelectorAll('.quantity-btn').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -183,7 +334,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function updateQuantity(cartKey, action, cartItem) {
-    // Show loading state
     const quantityBtns = cartItem.querySelectorAll('.quantity-btn');
     quantityBtns.forEach(btn => {
         btn.disabled = true;
@@ -206,34 +356,26 @@ function updateQuantity(cartKey, action, cartItem) {
     .then(data => {
         if (data.success) {
             if (data.item_removed) {
-                // Remove item from DOM with animation
                 cartItem.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
                 cartItem.style.opacity = '0';
                 cartItem.style.transform = 'translateX(-100%)';
                 
                 setTimeout(() => {
                     cartItem.remove();
-                    
-                    // Check if cart is empty
-                    const remainingItems = document.querySelectorAll('.cart-item');
-                    if (remainingItems.length === 0) {
-                        location.reload(); // Reload to show empty cart message
+                    if (document.querySelectorAll('.cart-item').length === 0) {
+                        location.reload();
                     }
                 }, 300);
             } else {
-                // Update quantity display
                 const quantityDisplay = cartItem.querySelector('.quantity-display');
                 quantityDisplay.textContent = data.new_quantity;
                 quantityDisplay.setAttribute('data-quantity', data.new_quantity);
                 
-                // Update item total
+                // Update item total with current duration
                 const itemTotal = cartItem.querySelector('.item-total');
-                const price = parseInt(cartItem.querySelector('.text-blue-600').textContent.replace(/[^\d]/g, ''));
-                const newItemTotal = price * data.new_quantity;
-                itemTotal.textContent = 'Rp ' + newItemTotal.toLocaleString('id-ID');
+                itemTotal.textContent = 'Rp ' + data.formatted_item_subtotal;
                 
-                // Disable decrease button if quantity is 1
-                const decreaseBtn = cartItem.querySelector('.decrease-btn');
+                const decreaseBtn = cartItem.querySelector('.quantity-btn.decrease-btn');
                 if (data.new_quantity <= 1) {
                     decreaseBtn.disabled = true;
                     decreaseBtn.classList.add('opacity-50');
@@ -243,30 +385,15 @@ function updateQuantity(cartKey, action, cartItem) {
                 }
             }
             
-            // Update totals
             updateTotals(data.formatted_total, data.new_total + 5000);
             
-            // Update cart counter in header
             if (window.updateCartCounter) {
                 window.updateCartCounter(data.cart_count);
             }
-            
-            // Show success notification
-            if (window.showNotification) {
-                window.showNotification(data.message, 'success');
-            }
-        } else {
-            throw new Error(data.message || 'Gagal mengupdate quantity');
         }
     })
-    .catch(error => {
-        console.error('Error:', error);
-        if (window.showNotification) {
-            window.showNotification('Terjadi kesalahan. Silakan coba lagi.', 'error');
-        }
-    })
+    .catch(error => console.error('Error:', error))
     .finally(() => {
-        // Re-enable buttons
         quantityBtns.forEach(btn => {
             btn.disabled = false;
             btn.classList.remove('opacity-50');
@@ -279,7 +406,6 @@ function removeItem(cartKey, cartItem) {
         return;
     }
     
-    // Show loading state
     const removeBtn = cartItem.querySelector('.remove-btn');
     removeBtn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
     removeBtn.disabled = true;
@@ -298,54 +424,29 @@ function removeItem(cartKey, cartItem) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Remove item from DOM with animation
             cartItem.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
             cartItem.style.opacity = '0';
             cartItem.style.transform = 'translateX(-100%)';
             
             setTimeout(() => {
                 cartItem.remove();
-                
-                // Check if cart is empty
-                const remainingItems = document.querySelectorAll('.cart-item');
-                if (remainingItems.length === 0) {
-                    location.reload(); // Reload to show empty cart message
+                if (document.querySelectorAll('.cart-item').length === 0) {
+                    location.reload();
                 }
             }, 300);
             
-            // Update totals
             updateTotals(data.formatted_total, data.new_total + 5000);
             
-            // Update cart counter in header
             if (window.updateCartCounter) {
                 window.updateCartCounter(data.cart_count);
             }
-            
-            // Show success notification
-            if (window.showNotification) {
-                window.showNotification(data.message, 'success');
-            }
-        } else {
-            throw new Error(data.message || 'Gagal menghapus item');
         }
     })
-    .catch(error => {
-        console.error('Error:', error);
-        if (window.showNotification) {
-            window.showNotification('Terjadi kesalahan. Silakan coba lagi.', 'error');
-        }
-        
-        // Reset button
-        removeBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>';
-        removeBtn.disabled = false;
-    });
+    .catch(error => console.error('Error:', error));
 }
 
 function updateTotals(formattedSubtotal, newTotalWithAdmin) {
-    // Update subtotal
     document.querySelector('.subtotal-amount').textContent = 'Rp ' + formattedSubtotal;
-    
-    // Update total with admin fee
     document.querySelector('.total-amount').textContent = 'Rp ' + newTotalWithAdmin.toLocaleString('id-ID');
 }
 </script>

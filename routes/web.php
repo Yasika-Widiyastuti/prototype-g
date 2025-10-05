@@ -89,6 +89,9 @@ Route::middleware(['auth', 'user.access'])->prefix('checkout')->name('checkout.'
     Route::post('/status', [CheckoutController::class, 'paymentStatus'])->name('status');
     Route::post('/update-quantity', [CheckoutController::class, 'updateQuantity'])->name('update-quantity');
     Route::post('/remove-item', [CheckoutController::class, 'removeItem'])->name('remove-item');
+    Route::post('/update-duration', [CheckoutController::class, 'updateDuration'])->name('update-duration');
+    Route::post('/update-duration', [CheckoutController::class, 'updateDuration'])->name('updateDuration');
+    Route::post('/update-all-duration', [CheckoutController::class, 'updateAllDuration'])->name('update-all-duration');
 });
 
 // ==========================
