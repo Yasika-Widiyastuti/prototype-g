@@ -140,10 +140,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // Users
-    Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
-    Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
-    Route::patch('/users/{user}/toggle-status', [AdminUserController::class, 'toggleStatus'])->name('users.toggle-status');
-    Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
+    Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
     // Payments
     Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');

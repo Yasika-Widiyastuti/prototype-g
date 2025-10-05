@@ -72,13 +72,13 @@ class Product extends Model
             ];
         } elseif ($this->stock <= 2) {
             return [
-                'label' => 'Stok Menipis',
-                'class' => 'bg-red-100 text-red-800'
+                'label' => 'Stok Terbatas',
+                'class' => 'bg-yellow-100 text-yellow-800'
             ];
         } elseif ($this->stock <= 5) {
             return [
-                'label' => 'Stok Terbatas',
-                'class' => 'bg-yellow-100 text-yellow-800'
+                'label' => 'Stok Rendah',
+                'class' => 'bg-orange-100 text-yellow-800'
             ];
         } else {
             return [
