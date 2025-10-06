@@ -55,7 +55,7 @@ class DashboardController extends Controller
             ->get();
 
         // 🆕 Barang yang sedang disewa (status: confirmed)
-        $ongoing_rentals = Order::where('status', 'confirmed')
+        $ongoing_rentals = Order::where('status', 'rented')
             ->with(['user', 'orderItems.product'])
             ->orderBy('rental_date', 'asc')
             ->get()
