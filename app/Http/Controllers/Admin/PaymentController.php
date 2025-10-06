@@ -60,12 +60,12 @@ class PaymentController extends Controller
     {
         $request->validate([
             'status' => 'required|in:waiting,success,failed',
-            'order_id' => 'nullable|exists:orders,id',
             'admin_notes' => 'nullable|string|max:1000'
         ]);
 
         $oldStatus = $payment->status;
-        
+
+        // Update payment
         $payment->update([
             'status' => $request->status,
             'notes' => $request->admin_notes,
@@ -73,30 +73,28 @@ class PaymentController extends Controller
             'verified_at' => now(),
         ]);
 
-        if ($request->status == 'success' && $request->order_id) {
-            $order = Order::find($request->order_id);
-            if ($order && $order->user_id == $payment->user_id && $order->status == 'pending') {
-                $order->update([
-                    'status' => 'paid',
-                    'payment_verified_at' => now(),
-                    'payment_method' => $payment->bank,
-                ]);
+        // ✅ UPDATE ORDER OTOMATIS (tidak perlu pilih manual)
+        if ($request->status === 'success' && $payment->order) {
+            $payment->order->update([
+                'status' => 'confirmed', // atau 'paid', sesuai kebutuhan
+                'payment_verified_at' => now(),
+            ]);
 
-                $this->activityLogService->logOrderStatusChange($order, 'pending', 'paid');
-                $this->notificationService->notifyOrderStatusChange($order, 'pending', 'paid');
-            }
+            // Activity log & notifikasi
+            $this->activityLogService->logOrderStatusChange($payment->order, 'waiting_verification', 'confirmed');
+            $this->notificationService->notifyOrderStatusChange($payment->order, 'waiting_verification', 'confirmed');
         }
 
+        // Activity log & notifikasi payment
         $this->activityLogService->logPaymentVerification($payment, $request->status);
         $this->notificationService->notifyPaymentStatusChange(
-            $payment, 
-            $oldStatus, 
+            $payment,
+            $oldStatus,
             $request->status,
-            $request->order_id ? Order::find($request->order_id) : null
+            $payment->order
         );
 
-        $message = $request->status == 'success' ? 'Pembayaran berhasil disetujui' : 'Pembayaran ditolak';
-
+        $message = $request->status === 'success' ? 'Pembayaran berhasil disetujui' : 'Pembayaran ditolak';
         return redirect()->route('admin.payments.index')->with('success', $message);
     }
 }

@@ -22,11 +22,17 @@ class OrderItem extends Model
         'total' => 'decimal:2',
     ];
 
+    /**
+     * Relasi ke tabel orders.
+     */
     public function order()
     {
         return $this->belongsTo(Order::class);
     }
 
+    /**
+     * Relasi ke tabel products.
+     */
     public function product()
     {
         return $this->belongsTo(Product::class);

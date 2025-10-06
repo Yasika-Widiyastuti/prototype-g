@@ -9,7 +9,14 @@ class Payment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'bank', 'bukti_transfer', 'status', 'notes', 'verified_by', 'verified_at',
+        'user_id',
+        'order_id', // ✅ TAMBAHKAN
+        'bank',
+        'bukti_transfer',
+        'status',
+        'notes',
+        'verified_by',
+        'verified_at',
     ];
 
     protected $casts = [
@@ -26,13 +33,20 @@ class Payment extends Model
         return $this->belongsTo(User::class, 'verified_by');
     }
 
+    // ✅ GANTI ini dengan relasi langsung
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
+
     public function getStatusBadgeAttribute()
     {
         $badges = [
             'waiting' => 'bg-yellow-100 text-yellow-800',
             'success' => 'bg-green-100 text-green-800',
-            'failed' => 'bg-red-100 text-red-800',
+            'failed'  => 'bg-red-100 text-red-800',
         ];
+
         return $badges[$this->status] ?? 'bg-gray-100 text-gray-800';
     }
 
@@ -41,8 +55,9 @@ class Payment extends Model
         $texts = [
             'waiting' => 'Menunggu Verifikasi',
             'success' => 'Berhasil',
-            'failed' => 'Gagal',
+            'failed'  => 'Gagal',
         ];
+
         return $texts[$this->status] ?? 'Unknown';
     }
 }

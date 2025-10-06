@@ -132,22 +132,25 @@
             <!-- Action Buttons -->
             <div class="text-center space-x-4">
                 <a href="{{ route('home') }}" 
-                   class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-6 py-3 rounded-lg transition">
+                class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-6 py-3 rounded-lg transition">
                     Kembali ke Beranda
                 </a>
-                
-                @if ($payment->status == 'failed')
-                <a href="{{ route('checkout.confirmation') }}" 
-                   class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition">
-                    Coba Upload Ulang
-                </a>
-                @endif
-                
-                @if ($payment->status != 'failed')
-                <a href="{{ route('shop') }}" 
-                   class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition">
-                    Lanjut Belanja
-                </a>
+
+                @if ($payment->status === 'waiting')
+                    <a href="{{ route('profile.orders') }}" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition">
+                        Lihat Pesanan Saya
+                    </a>
+                @elseif ($payment->status === 'failed')
+                    <a href="{{ route('checkout.confirmation') }}" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition">
+                        Coba Upload Ulang
+                    </a>
+                @elseif ($payment->status === 'success')
+                    <a href="{{ route('shop') }}" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition">
+                        Lanjut Belanja
+                    </a>
                 @endif
             </div>
         </div>
