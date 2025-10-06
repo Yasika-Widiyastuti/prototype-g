@@ -167,4 +167,7 @@ Route::middleware(['auth', 'admin'])
 
         // Reviews
         Route::post('/products/{id}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+
+        Route::post('orders/{order}/confirm-pickup', [App\Http\Controllers\Admin\OrderController::class, 'confirmPickup'])->name('orders.confirm-pickup');
+        Route::post('orders/{order}/confirm-return', [App\Http\Controllers\Admin\OrderController::class, 'confirmReturn'])->name('orders.confirm-return');
     });
