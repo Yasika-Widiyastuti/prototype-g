@@ -282,161 +282,101 @@ class ProductController extends Controller
     public function addToCart(Request $request, $id)
     {
         try {
-            // Determine product category based on current route
-            $routeName = $request->route()->getName();
-            $product = null;
-            $category = null;
-            
-            if (str_contains($routeName, 'handphone')) {
-                $product = Product::where('category', 'handphone')->find($id);
-                $category = 'handphone';
-            } elseif (str_contains($routeName, 'lightstick')) {
-                $product = Product::where('category', 'lightstick')->find($id);
-                $category = 'lightstick';
-            } elseif (str_contains($routeName, 'powerbank')) {
-                $product = Product::where('category', 'powerbank')->find($id);
-                $category = 'powerbank';
+            // Validasi produk
+            $product = Product::findOrFail($id);
+
+            if ($product->stock < 1) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Stok produk habis'
+                ], 400);
             }
 
-            if (!$product || !$product->is_available || $product->stock <= 0) {
-                if ($request->expectsJson()) {
-                    return response()->json([
-                        'success' => false, 
-                        'message' => 'Produk tidak tersedia atau stok habis'
-                    ], 404);
-                }
-                return redirect()->back()->with('error', 'Produk tidak tersedia atau stok habis');
-            }
+            $isExisting = false;
+            $productQuantity = 1;
 
-            // --- LOGIKA PERMANEN (DATABASE) vs TEMPORARY (SESSION) ---
             if (Auth::check()) {
-                // User sudah Login: Simpan ke Database (Tabel 'carts')
-                
-                $cartItem = Cart::firstOrNew([
-                    'user_id' => Auth::id(),
-                    'product_id' => $product->id
-                ]);
+                // User logged in
+                $existingCart = Cart::where('user_id', Auth::id())
+                                    ->where('product_id', $id)
+                                    ->first();
 
-                $isExisting = $cartItem->exists;
-                $newQuantity = $cartItem->quantity + 1; // Kuantitas yang diinginkan
-                
-                // --- KOREKSI KRUSIAL: Pengecekan Stok DB ---
-                if ($product->stock < $newQuantity) {
-                    $message = 'Stok produk tidak mencukupi untuk penambahan ini. Maksimal stok: ' . $product->stock;
-                    return redirect()->back()->with('error', $message);
-                }
-                // --- END KOREKSI STOK DB ---
-
-                // Jika stok aman, update kuantitas
-                $cartItem->quantity = $newQuantity;
-
-                if ($isExisting) {
-                    $message = 'Quantity produk berhasil ditambahkan! (Jumlah: ' . $cartItem->quantity . ')';
+                if ($existingCart) {
+                    $existingCart->quantity += 1;
+                    $existingCart->save();
+                    $productQuantity = $existingCart->quantity;
+                    $isExisting = true;
                 } else {
-                    // Produk baru, set tanggal default
-                    $cartItem->start_date = Carbon::now()->toDateString();
-                    $cartItem->end_date = Carbon::now()->addDay()->toDateString(); // Default 1 hari
-                    $cartItem->duration = 1;
-                    $message = 'Produk berhasil ditambahkan ke keranjang!';
+                    Cart::create([
+                        'user_id' => Auth::id(),
+                        'product_id' => $id,
+                        'quantity' => 1,
+                        'duration' => 1,
+                        'start_date' => now()->toDateString(),
+                        'end_date' => now()->toDateString(),
+                    ]);
+                    $productQuantity = 1;
+                    $isExisting = false;
                 }
 
-                $cartItem->save(); // SIMPAN SETELAH STOK DIPASTIKAN AMAN
-                $totalUniqueItems = Cart::where('user_id', Auth::id())->count();
-                
-                // --- FIX KRUSIAL: Update session cart_count untuk user yang login ---
-                session()->put('cart_count', $totalUniqueItems);
-                // --- END FIX ---
-                
+                // Hitung total quantity
+                $cartCount = Cart::where('user_id', Auth::id())->sum('quantity');
+
             } else {
-                // User adalah Guest: Simpan ke Session (Logika lama Anda)
-                
-                // Start session if not started
-                if (!session()->isStarted()) {
-                    session()->start();
-                }
+                // Guest - session
+                $cart = session('cart', []);
+                $cartKey = $product->category . '_' . $product->id;
 
-                $cart = session()->get('cart', []);
-                $cartKey = $category . '_' . $id;
-
-                $isExisting = isset($cart[$cartKey]);
-                $currentQuantity = $isExisting ? $cart[$cartKey]['quantity'] : 0;
-                $newQuantity = $currentQuantity + 1; // Kuantitas yang diinginkan
-                
-                // --- KOREKSI KRUSIAL: Pengecekan Stok Session ---
-                if ($product->stock < $newQuantity) {
-                     $message = 'Stok produk tidak mencukupi untuk penambahan ini. Maksimal stok: ' . $product->stock;
-                     return redirect()->back()->with('error', $message);
-                }
-                // --- END KOREKSI STOK Session ---
-
-                if ($isExisting) {
-                    // Product already in cart, update quantity
-                    $cart[$cartKey]['quantity'] = $newQuantity;
-                    $message = 'Quantity produk berhasil ditambahkan! (Jumlah: ' . $cart[$cartKey]['quantity'] . ')';
+                if (isset($cart[$cartKey])) {
+                    $cart[$cartKey]['quantity']++;
+                    $productQuantity = $cart[$cartKey]['quantity'];
+                    $isExisting = true;
                 } else {
-                    // Add new product to cart with quantity 1
                     $cart[$cartKey] = [
                         'id' => $product->id,
                         'name' => $product->name,
-                        'price' => (int) $product->price,
-                        'image' => $product->image_url,
-                        'category' => $category,
+                        'price' => $product->price,
                         'quantity' => 1,
-                        'description' => $product->description ?? '',
-                        // KOREKSI: Tambah field rental untuk konsistensi dengan DB
-                        'start_date' => Carbon::now()->toDateString(),
-                        'end_date' => Carbon::now()->addDay()->toDateString(),
-                        'duration' => 1, 
+                        'category' => $product->category,
+                        'image' => $product->image_url,
+                        'duration' => 1,
+                        'start_date' => now()->toDateString(),
+                        'end_date' => now()->toDateString(),
                     ];
-                    $message = 'Produk berhasil ditambahkan ke keranjang!';
+                    $productQuantity = 1;
+                    $isExisting = false;
                 }
 
-                // KOREKSI: Hitung subtotal setelah kuantitas di-update
-                $cart[$cartKey]['subtotal'] = $cart[$cartKey]['price'] * $cart[$cartKey]['quantity'] * ($cart[$cartKey]['duration'] ?? 1);
-                
-                // Update session with new cart
                 session()->put('cart', $cart);
-                
-                // Calculate total unique items (not quantity)
-                $totalUniqueItems = count($cart);
-                session()->put('cart_count', $totalUniqueItems);
-                session()->save(); // Force save session
-            }
-            // --- END LOGIKA CART ---
 
-            Log::info('Cart updated:', [
-                'user_id' => Auth::id() ?? 'Guest',
-                'product_id' => $id,
-                'cart_count' => $totalUniqueItems,
+                // Hitung total quantity
+                $cartCount = 0;
+                foreach ($cart as $item) {
+                    $cartCount += $item['quantity'];
+                }
+            }
+
+            // Update session cart_count
+            session()->put('cart_count', $cartCount);
+
+            // PENTING: Pastikan return JSON dengan status 200
+            return response()->json([
+                'success' => true,
+                'message' => $isExisting 
+                    ? "Quantity {$product->name} berhasil ditambahkan! (Total: {$productQuantity})"
+                    : "{$product->name} berhasil ditambahkan ke keranjang!",
+                'cart_count' => $cartCount,
+                'product_quantity' => $productQuantity,
                 'is_existing' => $isExisting
-            ]);
+            ], 200); // Status 200 OK
 
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => $message,
-                    'cart_count' => $totalUniqueItems,
-                    'product_name' => $product->name,
-                    'is_existing' => $isExisting
-                ]);
-            }
-
-            return redirect()->back()->with('success', $message);
-            
         } catch (\Exception $e) {
-            Log::error('Error adding to cart:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
+            \Log::error('Add to cart error: ' . $e->getMessage());
             
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => false, 
-                    'message' => 'Terjadi kesalahan sistem. Silakan coba lagi. (' . $e->getMessage() . ')' 
-                ], 500);
-            }
-            
-            return redirect()->back()->with('error', 'Terjadi kesalahan. Silakan coba lagi.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

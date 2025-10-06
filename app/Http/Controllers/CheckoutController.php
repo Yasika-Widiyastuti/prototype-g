@@ -15,25 +15,17 @@ use Carbon\Carbon;
 
 class CheckoutController extends Controller
 {
-    public function __construct()
-    {
-        // Allow browsing checkout pages for guests, but require auth for final submit/payment.
-        // We'll enforce login when needed inside methods (payment submission / order creation).
-    }
-
     /**
-     * Step 1: Halaman checkout (menangani guest & auth)
+     * Step 1: Halaman checkout
      */
     public function index()
     {
         $cartItems = $this->getDetailedCartItems();
 
-        // jika kosong -> redirect ke cart
         if (empty($cartItems)) {
-            return redirect()->route('cart.index')->with('error', 'Keranjang Anda kosong.');
+            return redirect()->route('home')->with('error', 'Keranjang Anda kosong.');
         }
 
-        // ambil tanggal dari session atau item pertama
         $first = reset($cartItems);
         $startDate = session('start_date', $first['start_date'] ?? Carbon::now()->toDateString());
         $endDate = session('end_date', $first['end_date'] ?? Carbon::now()->toDateString());
@@ -41,12 +33,14 @@ class CheckoutController extends Controller
 
         $total = $this->calculateTotalFromItems($cartItems);
 
+        // PENTING: Update cart_count dengan TOTAL QUANTITY (bukan unique items)
+        $this->updateCartCount();
+
         return view('checkout.index', compact('cartItems', 'total', 'startDate', 'endDate', 'duration'));
     }
 
     /**
-     * Update quantity untuk item (mendukung guest via session & user via DB)
-     * body: cart_key, action (increase|decrease)
+     * Update quantity
      */
     public function updateQuantity(Request $request)
     {
@@ -61,11 +55,14 @@ class CheckoutController extends Controller
         $newQuantity = 0;
 
         if (Auth::check()) {
-            // Cart item di DB: kita gunakan pola di getDetailedCartItems -> item menyimpan cart_id
-            // Support: cart_key bisa berupa "<category>_<productId>" atau "cart_<cartId>"
-            $cartId = $this->extractCartIdFromKey($cartKey);
+            // Extract product_id dari cart_key (format: category_productId)
+            $parts = explode('_', $cartKey);
+            $productId = end($parts);
 
-            $cartItem = Cart::where('user_id', Auth::id())->where('id', $cartId)->first();
+            $cartItem = Cart::where('user_id', Auth::id())
+                           ->where('product_id', $productId)
+                           ->first();
+
             if (!$cartItem) {
                 return response()->json(['success' => false, 'message' => 'Produk tidak ditemukan di keranjang'], 404);
             }
@@ -77,7 +74,7 @@ class CheckoutController extends Controller
                 $itemRemoved = true;
                 $newQuantity = 0;
             } else {
-                // cek stok bila perlu
+                // Cek stok
                 if ($cartItem->product && $cartItem->product->stock < $newQuantity) {
                     return response()->json(['success' => false, 'message' => 'Stok tidak mencukupi.'], 400);
                 }
@@ -86,7 +83,7 @@ class CheckoutController extends Controller
             }
 
         } else {
-            // guest: session('cart') struktur: [cart_key => [id, name, price, quantity, duration,...]]
+            // Guest
             $cart = session('cart', []);
             if (!isset($cart[$cartKey])) {
                 return response()->json(['success' => false, 'message' => 'Produk tidak ditemukan di keranjang'], 404);
@@ -105,10 +102,11 @@ class CheckoutController extends Controller
             session()->put('cart', $cart);
         }
 
-        // ambil ulang cart terperinci dan total
         $newCartItems = $this->getDetailedCartItems();
         $newTotal = $this->calculateTotalFromItems($newCartItems);
-        $cartCount = count($newCartItems);
+        
+        // PERBAIKAN: Hitung TOTAL QUANTITY (bukan unique items)
+        $cartCount = $this->calculateCartCount($newCartItems);
         session()->put('cart_count', $cartCount);
 
         $itemData = $itemRemoved ? null : ($newCartItems[$cartKey] ?? null);
@@ -132,7 +130,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Hapus item (guest & auth)
+     * Hapus item
      */
     public function removeItem(Request $request)
     {
@@ -140,8 +138,13 @@ class CheckoutController extends Controller
         $cartKey = $request->cart_key;
 
         if (Auth::check()) {
-            $cartId = $this->extractCartIdFromKey($cartKey);
-            $deleted = Cart::where('user_id', Auth::id())->where('id', $cartId)->delete();
+            $parts = explode('_', $cartKey);
+            $productId = end($parts);
+            
+            $deleted = Cart::where('user_id', Auth::id())
+                         ->where('product_id', $productId)
+                         ->delete();
+
             if (!$deleted) {
                 return response()->json(['success' => false, 'message' => 'Produk tidak ditemukan di keranjang'], 404);
             }
@@ -156,7 +159,9 @@ class CheckoutController extends Controller
 
         $newCartItems = $this->getDetailedCartItems();
         $newTotal = $this->calculateTotalFromItems($newCartItems);
-        $cartCount = count($newCartItems);
+        
+        // PERBAIKAN: Hitung TOTAL QUANTITY
+        $cartCount = $this->calculateCartCount($newCartItems);
         session()->put('cart_count', $cartCount);
 
         return response()->json([
@@ -169,7 +174,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Update durasi untuk semua item (dari calendar) - mendukung guest & auth
+     * Update durasi semua item
      */
     public function updateAllDuration(Request $request)
     {
@@ -189,15 +194,11 @@ class CheckoutController extends Controller
         if ($duration > 30) $duration = 30;
 
         if (Auth::check()) {
-            // update massal di DB
-            $cartIds = Cart::where('user_id', Auth::id())->pluck('id')->toArray();
-            if (!empty($cartIds)) {
-                Cart::whereIn('id', $cartIds)->where('user_id', Auth::id())->update([
-                    'duration' => $duration,
-                    'start_date' => $start->toDateString(),
-                    'end_date' => $end->toDateString(),
-                ]);
-            }
+            Cart::where('user_id', Auth::id())->update([
+                'duration' => $duration,
+                'start_date' => $start->toDateString(),
+                'end_date' => $end->toDateString(),
+            ]);
         } else {
             $cart = session('cart', []);
             foreach ($cart as $k => $v) {
@@ -210,7 +211,6 @@ class CheckoutController extends Controller
 
         session()->put('start_date', $start->toDateString());
         session()->put('end_date', $end->toDateString());
-        session()->save();
 
         $newCartItems = $this->getDetailedCartItems();
         $newTotal = $this->calculateTotalFromItems($newCartItems);
@@ -235,51 +235,49 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Step 2: payment page - if guest: redirect to login to proceed payment
+     * Payment page
      */
     public function payment()
     {
         $cartItems = $this->getDetailedCartItems();
         if (empty($cartItems)) {
-            return redirect()->route('checkout.index')->with('error', 'Keranjang Anda kosong.');
+            return redirect()->route('home')->with('error', 'Keranjang Anda kosong.');
         }
 
-        // jika guest, suruh login sebelum memilih metode pembayaran
         if (!Auth::check()) {
-            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu untuk melanjutkan pembayaran.');
+            return redirect()->route('signIn')->with('error', 'Silakan login terlebih dahulu untuk melanjutkan pembayaran.');
         }
 
         $subtotal = $this->calculateTotalFromItems($cartItems);
         $total = $subtotal + 5000;
 
+        $this->updateCartCount();
+
         return view('checkout.payment', compact('cartItems', 'total'));
     }
 
     /**
-     * Step 2b: Simpan pilihan bank
+     * Process payment method selection
      */
     public function processPayment(Request $request)
     {
         $request->validate(['bank' => 'required|in:bca,mandiri,bri']);
-
-        // simpan key bank & payment_method di session
         session(['selected_bank' => $request->bank, 'payment_method' => $request->bank]);
-
         return redirect()->route('checkout.confirmation')->with('success', 'Metode pembayaran berhasil dipilih.');
     }
 
     /**
-     * Step 3: Konfirmasi pembayaran (menampilkan bank, order summary)
+     * Confirmation page
      */
     public function confirmation()
     {
         $cartItems = $this->getDetailedCartItems();
         if (empty($cartItems)) {
-            return redirect()->route('checkout.index')->with('error', 'Keranjang Anda kosong.');
+            return redirect()->route('home')->with('error', 'Keranjang Anda kosong.');
         }
 
         if (!Auth::check()) {
-            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu untuk konfirmasi pembayaran.');
+            return redirect()->route('signIn')->with('error', 'Silakan login terlebih dahulu untuk konfirmasi pembayaran.');
         }
 
         $subtotal = $this->calculateTotalFromItems($cartItems);
@@ -296,12 +294,13 @@ class CheckoutController extends Controller
         }
 
         $selectedBank = $banks[$selectedBankKey];
+        $this->updateCartCount();
 
         return view('checkout.confirmation', compact('cartItems', 'total', 'selectedBank', 'selectedBankKey'));
     }
 
     /**
-     * Step 4: Upload bukti transfer & buat Order + OrderItems (hanya untuk user terautentikasi)
+     * Upload bukti transfer & create order
      */
     public function paymentStatus(Request $request)
     {
@@ -310,7 +309,7 @@ class CheckoutController extends Controller
         ]);
 
         if (!Auth::check()) {
-            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
+            return redirect()->route('signIn')->with('error', 'Silakan login terlebih dahulu.');
         }
 
         $selectedBankKey = session('selected_bank');
@@ -328,10 +327,9 @@ class CheckoutController extends Controller
             $cartItems = Cart::where('user_id', Auth::id())->with('product')->get();
 
             if ($cartItems->isEmpty()) {
-                return redirect()->route('checkout.index')->with('error', 'Keranjang kosong');
+                return redirect()->route('home')->with('error', 'Keranjang kosong');
             }
 
-            // hitung subtotal
             $subtotal = 0;
             foreach ($cartItems as $c) {
                 if ($c->product) {
@@ -340,7 +338,6 @@ class CheckoutController extends Controller
             }
             $totalAmount = $subtotal + 5000;
 
-            // upload bukti
             $paymentProofPath = null;
             if ($request->hasFile('bukti_transfer')) {
                 $file = $request->file('bukti_transfer');
@@ -348,7 +345,6 @@ class CheckoutController extends Controller
                 $paymentProofPath = $file->storeAs('payment_proofs', $filename, 'public');
             }
 
-            // create order
             $order = Order::create([
                 'user_id' => Auth::id(),
                 'total_amount' => $totalAmount,
@@ -359,7 +355,6 @@ class CheckoutController extends Controller
                 'rental_days' => $cartItems->first()->duration ?? 1,
             ]);
 
-            // create order items and decrement stock
             foreach ($cartItems as $cartItem) {
                 if (!$cartItem->product) continue;
 
@@ -373,7 +368,6 @@ class CheckoutController extends Controller
                     'total' => $lineTotal,
                 ]);
 
-                // update stok aman
                 $product = Product::find($cartItem->product_id);
                 if ($product) {
                     $product->stock = max(0, $product->stock - $cartItem->quantity);
@@ -381,7 +375,6 @@ class CheckoutController extends Controller
                 }
             }
 
-            // optional: simpan juga Payment record (jika Anda pakai model Payment)
             if (class_exists(Payment::class)) {
                 Payment::create([
                     'user_id' => Auth::id(),
@@ -392,15 +385,11 @@ class CheckoutController extends Controller
                 ]);
             }
 
-            // hapus cart DB user
             Cart::where('user_id', Auth::id())->delete();
-
-            // bersihkan session terkait cart/payment
             session()->forget(['cart', 'cart_count', 'selected_bank', 'payment_method', 'start_date', 'end_date']);
 
             DB::commit();
 
-            // pasang object sederhana untuk tampilan status
             $payment = (object)[
                 'status' => 'waiting',
                 'order' => $order
@@ -416,8 +405,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Ambil data keranjang terperinci (mendukung guest/session & auth/db)
-     * returns array keyed by "<category>_<productId>" (sama seperti sebelumnya)
+     * Get detailed cart items
      */
     private function getDetailedCartItems(): array
     {
@@ -448,16 +436,14 @@ class CheckoutController extends Controller
                 }
             }
         } else {
-            // guest: asumsi session('cart') sudah berisi data lengkap seperti name, price, quantity, duration
             $cartItems = session('cart', []);
         }
 
-        session()->put('cart_count', count($cartItems));
         return $cartItems;
     }
 
     /**
-     * Hitung total dari array cartItems (yang dikembalikan getDetailedCartItems)
+     * Calculate total from cart items
      */
     private function calculateTotalFromItems(array $cartItems): int
     {
@@ -474,19 +460,46 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Extract cart_id from cart_key if possible.
-     * Accept formats: "cart_123" or "<category>_123" -> returns 123
+     * Calculate TOTAL QUANTITY (not unique items) dari cart
      */
-    private function extractCartIdFromKey(string $cartKey)
+    private function calculateCartCount(array $cartItems): int
     {
-        // kalau key seperti 'cart_123' atau 'something_123' -> ambil angka terakhir
-        $parts = explode('_', $cartKey);
-        $last = end($parts);
-        return is_numeric($last) ? (int)$last : 0;
+        $total = 0;
+        foreach ($cartItems as $item) {
+            $total += $item['quantity'] ?? 0;
+        }
+        return $total;
     }
 
     /**
-     * Daftar bank
+     * Update cart_count di session
+     */
+    private function updateCartCount(): void
+    {
+        $cartItems = $this->getDetailedCartItems();
+        $count = $this->calculateCartCount($cartItems);
+        session()->put('cart_count', $count);
+    }
+
+    /**
+     * Static method untuk dipanggil dari mana saja
+     */
+    public static function getCartCount(): int
+    {
+        if (Auth::check()) {
+            return Cart::where('user_id', Auth::id())->sum('quantity');
+        }
+        
+        $cart = session('cart', []);
+        $total = 0;
+        foreach ($cart as $item) {
+            $total += $item['quantity'] ?? 0;
+        }
+        return $total;
+    }
+
+    /**
+     * Bank list
      */
     private function getBanks(): array
     {

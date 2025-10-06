@@ -190,9 +190,12 @@
                                 d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.195.195-.195.512 0 .707L7 18h12M9 19a2 2 0 100 4 2 2 0 000-4zM20 19a2 2 0 100 4 2 2 0 000-4z">
                             </path>
                         </svg>
-                        <span id="cart-counter" class="cart-counter absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center {{ session('cart_count', 0) > 0 ? '' : 'hidden' }}">
-                            <span id="cart-count">{{ session('cart_count', 0) }}</span>
+                        @if(($globalCartCount ?? session('cart_count', 0)) > 0)
+                        <span id="cart-counter" class="cart-counter absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            <span id="cart-count">{{ $globalCartCount ?? session('cart_count', 0) }}</span>
                         </span>
+                        @endif
+
                     </a>
                 </div>
 
@@ -242,8 +245,8 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.195.195-.195.512 0 .707L7 18h12M9 19a2 2 0 100 4 2 2 0 000-4zM20 19a2 2 0 100 4 2 2 0 000-4z"></path>
                             </svg>
                             Keranjang 
-                            <span id="mobile-cart-counter" class="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full {{ session('cart_count', 0) > 0 ? '' : 'hidden' }}">
-                                <span id="mobile-cart-count">{{ session('cart_count', 0) }}</span>
+                            <span id="mobile-cart-counter" class="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full {{  $globalCartCount ?? session('cart_count', 0) }}">
+                                <span id="mobile-cart-count">{{  $globalCartCount ?? session('cart_count', 0) }}</span>
                             </span>
                         </a>
                     </div>
@@ -388,6 +391,7 @@
     @stack('scripts')
     
     <!-- Global Cart Management Script -->
+    <!-- Tambahkan di bagian <script> sebelum closing </body> -->
     <script>
         // Function to update cart counter
         function updateCartCounter(count) {
@@ -397,30 +401,32 @@
             const mobileCartCount = document.getElementById('mobile-cart-count');
             
             if (count > 0) {
-                cartCounter.classList.remove('hidden');
-                mobileCartCounter.classList.remove('hidden');
-                cartCount.textContent = count;
-                mobileCartCount.textContent = count;
+                if (cartCounter) {
+                    cartCounter.classList.remove('hidden');
+                    cartCount.textContent = count;
+                    // Add bounce animation
+                    cartCounter.classList.remove('cart-counter');
+                    void cartCounter.offsetWidth;
+                    cartCounter.classList.add('cart-counter');
+                }
                 
-                // Add bounce animation
-                cartCounter.classList.remove('cart-counter');
-                void cartCounter.offsetWidth; // Trigger reflow
-                cartCounter.classList.add('cart-counter');
+                if (mobileCartCounter) {
+                    mobileCartCounter.classList.remove('hidden');
+                    mobileCartCount.textContent = count;
+                }
             } else {
-                cartCounter.classList.add('hidden');
-                mobileCartCounter.classList.add('hidden');
+                if (cartCounter) cartCounter.classList.add('hidden');
+                if (mobileCartCounter) mobileCartCounter.classList.add('hidden');
             }
         }
 
         // Function to show notification
         function showNotification(message, type = 'success') {
-            // Remove existing notifications
             const existingNotification = document.querySelector('.notification-toast');
             if (existingNotification) {
                 existingNotification.remove();
             }
 
-            // Create notification element
             const notification = document.createElement('div');
             notification.className = `notification-toast fixed bottom-4 right-4 px-6 py-4 rounded-lg shadow-lg z-50 max-w-sm transition-all duration-300 transform translate-x-full ${
                 type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
@@ -444,12 +450,10 @@
             
             document.body.appendChild(notification);
             
-            // Slide in animation
             setTimeout(() => {
                 notification.classList.remove('translate-x-full');
             }, 100);
             
-            // Remove notification after 4 seconds
             setTimeout(() => {
                 notification.classList.add('translate-x-full');
                 setTimeout(() => {
@@ -478,25 +482,29 @@
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('Add to cart response:', data); // Debug
+                
                 if (data.success) {
-                    // Update cart counter (shows unique items, not total quantity)
-                    updateCartCounter(data.cart_count);
+                    // PENTING: Update cart counter dengan cart_count dari response
+                    updateCartCounter(data.cart_count || 0);
                     
-                    // Show different success message based on whether product already existed
+                    // Show success message
                     let successText = '✓ Ditambahkan!';
-                    if (data.is_existing && data.product_quantity > 1) {
+                    if (data.product_quantity && data.product_quantity > 1) {
                         successText = `✓ Qty: ${data.product_quantity}`;
                     }
                     
-                    // Show success state
                     button.innerHTML = successText;
                     button.className = button.className.replace('bg-blue-600', 'bg-green-600').replace('hover:bg-blue-700', 'hover:bg-green-700');
                     
-                    // Show success notification with quantity info
-                    let notificationMessage = data.message || 'Produk berhasil ditambahkan ke keranjang!';
-                    showNotification(notificationMessage, 'success');
+                    showNotification(data.message || 'Produk berhasil ditambahkan ke keranjang!', 'success');
                     
                     // Reset button after 3 seconds
                     setTimeout(() => {
@@ -520,9 +528,9 @@
             });
         }
 
-        // Auto-attach event listeners to all add to cart forms
+        // Auto-attach event listeners
         document.addEventListener('DOMContentLoaded', function() {
-            // Handle all forms with action containing "cart/add"
+            // Handle all add to cart forms
             const addToCartForms = document.querySelectorAll('form[action*="cart/add"]');
             
             addToCartForms.forEach(form => {
