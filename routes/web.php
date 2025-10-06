@@ -54,25 +54,15 @@ Route::view('/terms-and-conditions', 'pages.terms-and-conditions')->name('termsA
 // ==========================
 // Product Routes
 // ==========================
-<<<<<<< HEAD
-Route::get('/shop', [ProductController::class, 'index'])->name('shop');
-
-// Product listing (accessible to all)
-=======
 // Shop - All products
 Route::get('/shop', [ProductController::class, 'index'])->name('shop');
 
 // Product listing by category
->>>>>>> f35fff7 (habis ubah views yang welcomeblade bagian produk unggulan)
 Route::get('/handphone', [ProductController::class, 'handphoneIndex'])->name('handphone.index');
 Route::get('/lightstick', [ProductController::class, 'lightstickIndex'])->name('lightstick.index');
 Route::get('/powerbank', [ProductController::class, 'powerbankIndex'])->name('powerbank.index');
 
-<<<<<<< HEAD
-// Product detail (customer only)
-=======
 // Product detail (customer only - requires login)
->>>>>>> f35fff7 (habis ubah views yang welcomeblade bagian produk unggulan)
 Route::middleware(['auth', 'user.access'])->group(function () {
     Route::get('/handphone/{id}', [ProductController::class, 'handphoneShow'])->name('handphone.show');
     Route::get('/lightstick/{id}', [ProductController::class, 'lightstickShow'])->name('lightstick.show');
