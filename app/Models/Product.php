@@ -67,23 +67,23 @@ class Product extends Model
     {
         if ($this->stock == 0) {
             return [
-                'label' => 'Habis',
-                'class' => 'bg-red-100 text-red-800'
+                'label' => 'Stok Habis',
+                'class' => 'bg-black text-white'
             ];
         } elseif ($this->stock <= 2) {
             return [
                 'label' => 'Stok Menipis',
-                'class' => 'bg-red-100 text-red-800'
+                'class' => 'bg-blue-800 text-white'
             ];
-        } elseif ($this->stock <= 5) {
+        } elseif ($this->stock > 2 && $this->stock < 10) {
             return [
                 'label' => 'Stok Terbatas',
-                'class' => 'bg-yellow-100 text-yellow-800'
+                'class' => 'bg-blue-400 text-white'
             ];
         } else {
             return [
                 'label' => 'Stok Aman',
-                'class' => 'bg-green-100 text-green-800'
+                'class' => 'bg-blue-100 text-black'
             ];
         }
     }
@@ -92,7 +92,7 @@ class Product extends Model
     public function getCategoryBadgeAttribute()
     {
         $badges = [
-            'handphone' => 'bg-blue-100 text-blue-800',
+            'handphone' => 'bg-red-100 text-red-800',
             'lightstick' => 'bg-yellow-100 text-yellow-800',
             'powerbank' => 'bg-green-100 text-green-800',
         ];

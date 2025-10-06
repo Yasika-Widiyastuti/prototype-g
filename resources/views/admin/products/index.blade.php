@@ -56,25 +56,19 @@
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-blue-50 p-4 rounded-lg">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+        <div class="bg-blue-50 p-3 rounded-lg">
             <div class="text-2xl font-bold text-blue-600">{{ $products->total() }}</div>
             <div class="text-sm text-gray-600">Total Produk</div>
         </div>
-        <div class="bg-green-50 p-4 rounded-lg">
-            <div class="text-2xl font-bold text-green-600">
-                {{ $products->where('is_available', true)->where('stock', '>', 0)->count() }}
-            </div>
-            <div class="text-sm text-gray-600">Tersedia</div>
-        </div>
-        <div class="bg-yellow-50 p-4 rounded-lg">
-            <div class="text-2xl font-bold text-yellow-600">
+        <div class="bg-blue-50 p-3 rounded-lg">
+            <div class="text-2xl font-bold text-blue-600">
                 {{ $products->where('stock', '<=', 2)->where('is_available', true)->count() }}
             </div>
             <div class="text-sm text-gray-600">Stok Rendah</div>
         </div>
-        <div class="bg-red-50 p-4 rounded-lg">
-            <div class="text-2xl font-bold text-red-600">
+        <div class="bg-blue-50 p-3 rounded-lg">
+            <div class="text-2xl font-bold text-blue-600">
                 {{ $products->where('stock', 0)->count() }}
             </div>
             <div class="text-sm text-gray-600">Habis</div>
@@ -98,7 +92,7 @@
                 @forelse($products as $product)
                 <tr class="hover:bg-gray-50">
                     <td class="px-4 py-4">
-                        <div class="flex items-center">
+                        <div class="flex items-center space">
                             <div class="flex-shrink-0 h-12 w-12">
                                 <img class="h-12 w-12 rounded-lg object-cover" 
                                      src="{{ asset('storage/' . $product->image_url) }}" 
@@ -112,7 +106,7 @@
                         </div>
                     </td>
                     <td class="px-4 py-4">
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $product->category_badge }}">
+                        <span class="text-gray-800 text-sm">
                             {{ ucfirst($product->category) }}
                         </span>
                     </td>
@@ -120,28 +114,28 @@
                         <div class="text-sm font-medium text-gray-900">{{ $product->price_formatted }}</div>
                     </td>
                     <td class="px-4 py-4">
-                        <div class="text-sm font-medium text-gray-900">{{ $product->stock }}</div>
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $product->stock_status['class'] }}">
+                        <span class="text-sm font-medium text-gray-900">{{ $product->stock }}</span>
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $product->stock_status['class'] }}">
                             {{ $product->stock_status['label'] }}
                         </span>
                     </td>
                     <td class="px-4 py-4">
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $product->is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $product->is_available ? 'bg-white text-black' : 'bg-white text-black' }}">
                             {{ $product->is_available ? 'Aktif' : 'Nonaktif' }}
                         </span>
                     </td>
                     <td class="px-4 py-4 text-sm font-medium">
                         <div class="flex space-x-2">
                             <a href="{{ route('admin.products.show', $product) }}" 
-                               class="text-blue-600 hover:text-blue-900">Detail</a>
+                               class="border border-blue-600 text-blue-600 px-2 py-1 rounded hover:bg-blue-600 hover:text-white transition">Detail</a>
                             
                             <a href="{{ route('admin.products.edit', $product) }}" 
-                               class="text-green-600 hover:text-green-900">Edit</a>
+                               class="border border-blue-600 text-blue-600 px-2 py-1 rounded hover:bg-blue-600 hover:text-white transition">Edit</a>
                             
                             <form method="POST" action="{{ route('admin.products.toggle-availability', $product) }}" class="inline">
                                 @csrf
                                 @method('PATCH')
-                                <button type="submit" class="text-yellow-600 hover:text-yellow-900">
+                                <button type="submit" class="border border-blue-600 text-blue-600 px-2 py-1 rounded hover:bg-blue-600 hover:text-white transition">
                                     {{ $product->is_available ? 'Nonaktifkan' : 'Aktifkan' }}
                                 </button>
                             </form>
@@ -150,7 +144,7 @@
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" 
-                                        class="text-red-600 hover:text-red-900"
+                                        class="border border-blue-600 text-blue-600 px-2 py-1 rounded hover:bg-blue-600 hover:text-white transition"
                                         onclick="return confirm('Yakin ingin menghapus produk ini?')">
                                     Hapus
                                 </button>
