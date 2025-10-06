@@ -33,6 +33,7 @@
                 <tr class="bg-gray-50">
                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Telepon</th>
                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orders</th>
                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bergabung</th>
@@ -47,6 +48,9 @@
                     </td>
                     <td class="px-4 py-4">
                         <div class="text-sm text-gray-900">{{ $user->email }}</div>
+                    </td>
+                    <td class="px-4 py-4">
+                        <div class="text-sm text-gray-900">{{ $user->phone ?? '-' }}</div>
                     </td>
                     <td class="px-4 py-4">
                         <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $user->status_badge }}">
@@ -77,7 +81,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="px-4 py-12 text-center text-gray-500">
+                    <td colspan="7" class="px-4 py-12 text-center text-gray-500">
                         Tidak ada user yang ditemukan.
                     </td>
                 </tr>

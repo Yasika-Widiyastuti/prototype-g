@@ -11,6 +11,7 @@
             <div>
                 <h3 class="text-xl font-semibold text-gray-800">{{ $user->name }}</h3>
                 <p class="text-gray-600">{{ $user->email }}</p>
+                <p class="text-gray-600">Telepon: {{ $user->phone ?? '-' }}</p>
                 <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $user->status_badge }}">
                     {{ $user->status_text }}
                 </span>
