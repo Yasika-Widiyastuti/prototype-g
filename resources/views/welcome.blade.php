@@ -7,7 +7,7 @@
 <!-- Hero Section -->
 <section class="relative bg-gradient-to-r from-gray-900 to-gray-800 text-white">
     <div class="absolute inset-0 bg-black opacity-50"></div>
-    <img src="https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?auto=format&fit=crop&w=1500&q=80" 
+    <img src="{{ asset('storage/img/fotow.jpg') }}" 
          alt="Konser Background" 
          class="absolute inset-0 w-full h-full object-cover mix-blend-overlay"
          onerror="this.style.display='none'">
@@ -147,7 +147,7 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- Product 1 -->
+            <!-- Product 1 - Lightstick BTS -->
             <div class="bg-white rounded-xl shadow-lg overflow-hidden hover-lift loading">
                 <img src="https://i.pinimg.com/736x/aa/32/68/aa3268c1a2e0c97b80787932ad4b01a4.jpg" 
                      alt="Lightstick BTS" 
@@ -159,50 +159,68 @@
                     </div>
                     <p class="text-gray-600 mb-4">Official lightstick BTS dengan koneksi Bluetooth dan berbagai mode pencahayaan</p>
                     <div class="flex items-center justify-between">
-                        <span class="text-2xl font-bold text-yellow-600">Rp 60.000<span class="text-sm text-gray-500">/hari</span></span>
-                        <a href="/lightstick/2" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition">
-                            Sewa
-                        </a>
+                        <span class="text-2xl font-bold text-yellow-600">Rp 75.000<span class="text-sm text-gray-500">/hari</span></span>
+                        @auth
+                            <a href="{{ route('lightstick.show', 3) }}" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition">
+                                Sewa
+                            </a>
+                        @else
+                            <a href="{{ route('signIn') }}" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition">
+                                Sewa
+                            </a>
+                        @endauth
                     </div>
                 </div>
             </div>
 
-            <!-- Product 2 -->
+            <!-- Product 2 - Samsung Galaxy S24 Ultra -->
             <div class="bg-white rounded-xl shadow-lg overflow-hidden hover-lift loading">
-                <img src="https://i.pinimg.com/1200x/87/d3/0a/87d30a844086ad9fd3ed2c989d9025c0.jpg" 
-                     alt="iPhone 13 Pro" 
+                <img src="https://i.pinimg.com/1200x/a8/3f/4b/a83f4bbf667e46d68e67ed0155218a9a.jpg" 
+                     alt="Samsung Galaxy S24 Ultra" 
                      class="w-full h-48 object-cover">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-lg font-bold text-gray-900">iPhone 13 Pro</h3>
+                        <h3 class="text-lg font-bold text-gray-900">Samsung Galaxy S24 Ultra</h3>
                         <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">Premium</span>
                     </div>
-                    <p class="text-gray-600 mb-4">Smartphone dengan kamera pro untuk dokumentasi konser berkualitas tinggi</p>
+                    <p class="text-gray-600 mb-4">Android flagship dengan S Pen dan kamera zoom 100x untuk dokumentasi konser</p>
                     <div class="flex items-center justify-between">
-                        <span class="text-2xl font-bold text-yellow-600">Rp 100.000<span class="text-sm text-gray-500">/hari</span></span>
-                        <a href="/handphone/2" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition">
-                            Sewa
-                        </a>
+                        <span class="text-2xl font-bold text-yellow-600">Rp 140.000<span class="text-sm text-gray-500">/hari</span></span>
+                        @auth
+                            <a href="{{ route('handphone.show', 2) }}" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition">
+                                Sewa
+                            </a>
+                        @else
+                            <a href="{{ route('signIn') }}" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition">
+                                Sewa
+                            </a>
+                        @endauth
                     </div>
                 </div>
             </div>
 
-            <!-- Product 3 -->
+            <!-- Product 3 - Powerbank Xiaomi 20000mAh -->
             <div class="bg-white rounded-xl shadow-lg overflow-hidden hover-lift loading">
-                <img src="https://i.pinimg.com/1200x/8c/3c/dd/8c3cdd3c412201c3332d1587db32173a.jpg" 
-                     alt="Powerbank Anker" 
+                <img src="https://i.pinimg.com/1200x/16/30/6c/16306c1e7c40aa1d33c57d4f209d2445.jpg" 
+                     alt="Powerbank Xiaomi" 
                      class="w-full h-48 object-cover">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-lg font-bold text-gray-900">Powerbank Anker 20000mAh</h3>
+                        <h3 class="text-lg font-bold text-gray-900">Powerbank Xiaomi 20000mAh</h3>
                         <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">Reliable</span>
                     </div>
-                    <p class="text-gray-600 mb-4">Powerbank berkapasitas besar dengan fast charging untuk berbagai device</p>
+                    <p class="text-gray-600 mb-4">Powerbank berkualitas tinggi dengan fast charging untuk berbagai device</p>
                     <div class="flex items-center justify-between">
                         <span class="text-2xl font-bold text-yellow-600">Rp 25.000<span class="text-sm text-gray-500">/hari</span></span>
-                        <a href="/powerbank/1" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition">
-                            Sewa
-                        </a>
+                        @auth
+                            <a href="{{ route('powerbank.show', 6) }}" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition">
+                                Sewa
+                            </a>
+                        @else
+                            <a href="{{ route('signIn') }}" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition">
+                                Sewa
+                            </a>
+                        @endauth
                     </div>
                 </div>
             </div>

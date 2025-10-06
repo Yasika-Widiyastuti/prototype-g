@@ -21,7 +21,6 @@ use App\Http\Controllers\ProfileOrderController;
 // Auth Routes (Only for guests)
 // ==========================
 Route::middleware('guest')->group(function () {
-    // Login & Registration routes
     Route::get('/sign-in', function () { return view('auth.login'); })->name('signIn');
     Route::post('/sign-in', [LoginController::class, 'login'])->name('login');
     Route::get('/create-account', [RegisterController::class, 'showCreateForm'])->name('create-account');
@@ -55,14 +54,25 @@ Route::view('/terms-and-conditions', 'pages.terms-and-conditions')->name('termsA
 // ==========================
 // Product Routes
 // ==========================
+<<<<<<< HEAD
 Route::get('/shop', [ProductController::class, 'index'])->name('shop');
 
 // Product listing (accessible to all)
+=======
+// Shop - All products
+Route::get('/shop', [ProductController::class, 'index'])->name('shop');
+
+// Product listing by category
+>>>>>>> f35fff7 (habis ubah views yang welcomeblade bagian produk unggulan)
 Route::get('/handphone', [ProductController::class, 'handphoneIndex'])->name('handphone.index');
 Route::get('/lightstick', [ProductController::class, 'lightstickIndex'])->name('lightstick.index');
 Route::get('/powerbank', [ProductController::class, 'powerbankIndex'])->name('powerbank.index');
 
+<<<<<<< HEAD
 // Product detail (customer only)
+=======
+// Product detail (customer only - requires login)
+>>>>>>> f35fff7 (habis ubah views yang welcomeblade bagian produk unggulan)
 Route::middleware(['auth', 'user.access'])->group(function () {
     Route::get('/handphone/{id}', [ProductController::class, 'handphoneShow'])->name('handphone.show');
     Route::get('/lightstick/{id}', [ProductController::class, 'lightstickShow'])->name('lightstick.show');
@@ -90,7 +100,6 @@ Route::middleware(['auth', 'user.access'])->prefix('checkout')->name('checkout.'
     Route::post('/update-quantity', [CheckoutController::class, 'updateQuantity'])->name('update-quantity');
     Route::post('/remove-item', [CheckoutController::class, 'removeItem'])->name('remove-item');
     Route::post('/update-duration', [CheckoutController::class, 'updateDuration'])->name('update-duration');
-    Route::post('/update-duration', [CheckoutController::class, 'updateDuration'])->name('updateDuration');
     Route::post('/update-all-duration', [CheckoutController::class, 'updateAllDuration'])->name('update-all-duration');
 });
 
