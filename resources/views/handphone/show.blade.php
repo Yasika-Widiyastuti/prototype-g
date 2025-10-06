@@ -24,7 +24,7 @@
         <div class="bg-white p-8 rounded-xl shadow-lg mb-12">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div>
-                    <img src="{{ $product['image'] }}" 
+                    <img src="{{ asset('storage/' . $product['image']) }}" 
                             alt="{{ $product['name'] }}"
                             class="w-full h-auto rounded-lg shadow-md">
                 </div>
@@ -142,7 +142,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach($relatedProducts as $related)
                 <div class="bg-gray-50 p-4 rounded-lg shadow hover:shadow-lg transition hover-lift">
-                    <img src="{{ $related['image'] }}" 
+                    <img src="{{ asset('storage/' . $related['image']) }}" 
                             alt="{{ $related['name'] }}"
                             class="w-full h-48 object-cover rounded">
                     <h3 class="mt-4 font-semibold text-gray-900">{{ $related['name'] }}</h3>

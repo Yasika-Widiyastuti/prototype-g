@@ -24,7 +24,7 @@
         <div class="bg-white p-8 rounded-xl shadow-lg mb-12">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div>
-                    <img src="{{ $product['image'] }}" 
+                    <img src="{{ asset('storage/' . $product['image']) }}" 
                             alt="{{ $product['name'] }}"
                             class="w-full h-auto rounded-lg shadow-md">
                 </div>
@@ -134,8 +134,26 @@
             </div>
         </div>
         
-        {{-- Jika Anda memiliki bagian ulasan atau produk terkait, Anda bisa menambahkannya di sini, mengikuti struktur dari file sebelumnya. --}}
-        
+        @if($relatedProducts->count() > 0)
+        <div class="bg-white p-8 rounded-xl shadow-lg">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Produk Terkait</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                @foreach($relatedProducts as $related)
+                <div class="bg-gray-50 p-4 rounded-lg shadow hover:shadow-lg transition hover-lift">
+                    <img src="{{ asset('storage/' . $related['image']) }}" 
+                            alt="{{ $related['name'] }}"
+                            class="w-full h-48 object-cover rounded">
+                    <h3 class="mt-4 font-semibold text-gray-900">{{ $related['name'] }}</h3>
+                    <p class="text-blue-600 font-bold">Rp {{ number_format($related['price']) }} / hari</p>
+                    <a href="{{ route('powerbank.show', $related['id']) }}"
+                       class="mt-2 inline-block w-full text-center bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded transition">
+                        Lihat Detail
+                    </a>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
     </div>
 </div>
 

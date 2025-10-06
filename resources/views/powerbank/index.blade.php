@@ -34,7 +34,7 @@
 
             @foreach($products as $product)
             <div class="group relative bg-gray-50 p-4 rounded-lg shadow hover:shadow-lg transition flex flex-col">
-                <img src="{{ $product['image'] }}" 
+                <img src="{{ asset('storage/' . $product['image']) }}" 
                     alt="{{ $product['name'] }}" 
                     class="aspect-square w-full rounded-md object-cover group-hover:opacity-90 lg:aspect-auto lg:h-80" />
                 
