@@ -12,6 +12,14 @@
 </li>
 @endsection
 
+@auth
+    @if(auth()->user()->isVerified())
+        <a href="{{ route('checkout.index', $product) }}" class="btn-sewa">Sewa Sekarang</a>
+    @endif
+@else
+    <a href="{{ route('signIn') }}" class="btn-sewa">Login untuk Sewa</a>
+@endauth
+
 @section('content')
 <div class="py-12 bg-gray-50">
     <div class="container mx-auto px-4 sm:px-6">

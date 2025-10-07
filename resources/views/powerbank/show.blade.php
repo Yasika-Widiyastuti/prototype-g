@@ -18,7 +18,25 @@
 </li>
 @endsection
 
+@auth
+    @if(auth()->user()->isVerified())
+        <form method="POST" action="{{ route('cart.add.powerbank', $product->id) }}">
+            @csrf
+            <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg">
+                Tambah ke Keranjang
+            </button>
+        </form>
+    @endif
+@else
+    <a href="{{ route('signIn') }}" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg">
+        Login untuk Sewa
+    </a>
+@endauth
+
 @section('content')
+<div class="container mx-auto px-4 py-8">
+    @include('partials.verification-alert')
+    
 <div class="py-12 bg-gray-50">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="bg-white p-8 rounded-xl shadow-lg mb-12">

@@ -34,19 +34,25 @@ class RegisterController extends Controller
             'password.min' => 'Password minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak sama.',
             'ktp.required' => 'KTP harus diupload.',
+            'ktp.mimes' => 'Format KTP harus JPG, PNG, atau PDF.',
+            'ktp.max' => 'Ukuran KTP maksimal 5MB.',
             'kk.required' => 'KK harus diupload.',
+            'kk.mimes' => 'Format KK harus JPG, PNG, atau PDF.',
+            'kk.max' => 'Ukuran KK maksimal 5MB.',
             'agree.required' => 'Anda harus menyetujui syarat dan ketentuan.',
         ]);
 
         $ktpPath = null;
         $kkPath = null;
 
+        // Upload KTP
         if ($request->hasFile('ktp')) {
-            $ktpPath = $request->file('ktp')->store('public/documents');
+            $ktpPath = $request->file('ktp')->store('public/documents/ktp');
         }
 
+        // Upload KK
         if ($request->hasFile('kk')) {
-            $kkPath = $request->file('kk')->store('public/documents');
+            $kkPath = $request->file('kk')->store('public/documents/kk');
         }
 
         User::create([
@@ -58,10 +64,11 @@ class RegisterController extends Controller
             'ktp_path' => $ktpPath,
             'kk_path' => $kkPath,
             'email_verified_at' => now(),
-            'role' => 'customer', // ✅ tambahkan ini
-            'is_active' => true, // opsional, kalau mau akun aktif langsung
+            'role' => 'customer',
+            'is_active' => true,
+            'verification_status' => 'pending', // Default pending
         ]);
 
-        return redirect()->route('signIn')->with('success', 'Akun berhasil dibuat! Silakan login.');
+        return redirect()->route('signIn')->with('success', 'Akun berhasil dibuat! Silakan login dan tunggu verifikasi dari admin.');
     }
 }

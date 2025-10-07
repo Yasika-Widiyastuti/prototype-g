@@ -18,6 +18,18 @@
         <div class="bg-white rounded-xl shadow-lg p-8">
             <h1 class="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
 
+            {{-- Alert Verifikasi Akun --}}
+            @if(isset($showVerificationWarning) && $showVerificationWarning)
+                <div class="mb-6 p-4 rounded-lg 
+                    @if(str_contains($verificationMessage, 'menunggu')) bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 
+                    @elseif(str_contains($verificationMessage, 'ditolak')) bg-red-100 border-l-4 border-red-500 text-red-800 
+                    @else bg-gray-100 border-l-4 border-gray-500 text-gray-800 
+                    @endif">
+                    {{ $verificationMessage }}
+                </div>
+            @endif
+
+            {{-- Progress Steps --}}
             <div class="mb-8">
                 <div class="flex items-center">
                     <div class="flex items-center text-blue-600">
@@ -27,14 +39,14 @@
                         <span class="ml-4 text-sm font-medium">Review Pesanan</span>
                     </div>
                     <div class="flex-1 h-0.5 bg-gray-200 mx-4"></div>
-                    <div class="flex items-center text-gray-400">
+                    <div class="flex items-center {{ auth()->user()->hasVerifiedEmail() ? 'text-gray-400' : 'text-gray-300' }}">
                         <div class="flex-shrink-0 w-8 h-8 border-2 border-gray-300 rounded-full flex items-center justify-center text-sm font-medium">
                             2
                         </div>
                         <span class="ml-4 text-sm font-medium">Pembayaran</span>
                     </div>
                     <div class="flex-1 h-0.5 bg-gray-200 mx-4"></div>
-                    <div class="flex items-center text-gray-400">
+                    <div class="flex items-center text-gray-300">
                         <div class="flex-shrink-0 w-8 h-8 border-2 border-gray-300 rounded-full flex items-center justify-center text-sm font-medium">
                             3
                         </div>
@@ -43,6 +55,7 @@
                 </div>
             </div>
 
+            {{-- Cart Items --}}
             <div class="mb-8">
                 <h2 class="text-xl font-bold text-gray-900 mb-6">Detail Pesanan</h2>
 
@@ -75,7 +88,6 @@
                                 <p class="text-sm text-gray-500 mb-2">{{ $item['category'] ?? 'Kategori Tidak Diketahui' }}</p>
                                 <p class="text-sm font-medium text-blue-600">Rp {{ number_format($item['price'], 0, ',', '.') }} / hari</p>
                                 
-                                <!-- Quantity Control -->
                                 <div class="mt-4">
                                     <label class="block text-xs text-gray-600 mb-1">Jumlah</label>
                                     <div class="flex items-center space-x-2">
@@ -104,7 +116,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Total & Remove -->
                             <div class="text-right flex flex-col items-end gap-2">
                                 <p class="item-total text-lg font-bold text-gray-900">
                                     Rp {{ number_format($itemSubtotal, 0, ',', '.') }}
@@ -129,7 +140,8 @@
             @php
                 $initialDuration = $cartItems[array_key_first($cartItems)]['duration'] ?? 1;
             @endphp
-            <!-- Durasi Peminjaman Section -->
+            
+            {{-- Durasi Peminjaman --}}
             <div class="mb-8">
                 <h2 class="text-xl font-bold text-gray-900 mb-6">Durasi Peminjaman</h2>
                 <div class="bg-white border border-gray-200 rounded-lg p-6">
@@ -181,6 +193,7 @@
                 </div>
             </div>
 
+            {{-- Ringkasan Pembayaran --}}
             <div class="bg-gray-50 rounded-lg p-6 mb-8">
                 <h3 class="text-lg font-bold text-gray-900 mb-4">Ringkasan Pembayaran</h3>
                 <div class="space-y-2">
@@ -201,15 +214,34 @@
                 </div>
             </div>
 
+            {{-- Action Buttons --}}
             <div class="flex justify-between">
                 <a href="{{ route('shop') }}" 
                    class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-6 py-3 rounded-lg transition">
                     Lanjut Belanja
                 </a>
-                <a href="{{ route('checkout.payment') }}" 
-                   class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition">
-                    Lanjut ke Pembayaran
-                </a>
+                
+                @if(auth()->user()->verification_status === 'approved' && auth()->user()->is_active)
+                    <a href="{{ route('checkout.payment') }}" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition">
+                        Lanjut ke Pembayaran
+                    </a>
+                @else
+                    <button disabled 
+                            class="bg-gray-300 text-gray-500 font-medium px-6 py-3 rounded-lg cursor-not-allowed opacity-60 relative group"
+                            title="Akun Anda belum dapat melakukan checkout">
+                        <span class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                            Lanjut ke Pembayaran
+                        </span>
+                        <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                            Menunggu verifikasi admin
+                        </span>
+                    </button>
+                @endif
+
             </div>
             @endif
         </div>
@@ -219,7 +251,6 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Date picker handling
     const startDateInput = document.getElementById('start-date');
     const endDateInput = document.getElementById('end-date');
     const durationDisplay = document.getElementById('duration-display');
@@ -232,7 +263,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const diffTime = Math.abs(endDate - startDate);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
             
-            // Maximum 30 days
             if (diffDays > 30) {
                 alert('Maksimal durasi sewa adalah 30 hari');
                 const maxEndDate = new Date(startDate);
@@ -268,7 +298,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Update all item totals
                 document.querySelectorAll('.cart-item').forEach(cartItem => {
                     const cartKey = cartItem.getAttribute('data-cart-key');
                     if (data.items && data.items[cartKey]) {
@@ -278,7 +307,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
                 
-                // Update totals
                 updateTotals(data.formatted_total, data.new_total + 5000);
             }
         })
@@ -286,10 +314,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     startDateInput.addEventListener('change', function() {
-        // Update minimum end date
         endDateInput.min = this.value;
         
-        // If end date is before start date, update it
         if (new Date(endDateInput.value) < new Date(this.value)) {
             const nextDay = new Date(this.value);
             nextDay.setDate(nextDay.getDate() + 1);
@@ -300,7 +326,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     endDateInput.addEventListener('change', function() {
-        // Ensure end date is not before start date
         if (new Date(this.value) < new Date(startDateInput.value)) {
             alert('Tanggal selesai tidak boleh sebelum tanggal mulai');
             const nextDay = new Date(startDateInput.value);
@@ -311,7 +336,6 @@ document.addEventListener('DOMContentLoaded', function() {
         updateDurationDisplay();
     });
 
-    // Handle quantity buttons
     document.querySelectorAll('.quantity-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const action = this.getAttribute('data-action');
@@ -322,7 +346,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Handle remove buttons
     document.querySelectorAll('.remove-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const cartKey = this.getAttribute('data-cart-key');
@@ -371,7 +394,6 @@ function updateQuantity(cartKey, action, cartItem) {
                 quantityDisplay.textContent = data.new_quantity;
                 quantityDisplay.setAttribute('data-quantity', data.new_quantity);
                 
-                // Update item total with current duration
                 const itemTotal = cartItem.querySelector('.item-total');
                 itemTotal.textContent = 'Rp ' + data.formatted_item_subtotal;
                 

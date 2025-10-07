@@ -28,12 +28,32 @@ class CheckoutController extends Controller
     {
         $cartItems = $this->getDetailedCartItems();
 
-        // jika kosong -> redirect ke cart
+        // Jika keranjang kosong -> redirect ke cart
         if (empty($cartItems)) {
             return redirect()->route('cart.index')->with('error', 'Keranjang Anda kosong.');
         }
 
-        // ambil tanggal dari session atau item pertama
+        // Cek apakah user login & sudah diverifikasi
+        // Cek status verifikasi user (bukan email verification)
+        $showVerificationWarning = false;
+        $verificationMessage = null;
+
+        if (auth()->check()) {
+            $user = auth()->user();
+
+            if ($user->verification_status === 'pending') {
+                $showVerificationWarning = true;
+                $verificationMessage = 'Akun Anda masih menunggu verifikasi admin. Anda belum bisa melanjutkan checkout.';
+            } elseif ($user->verification_status === 'rejected') {
+                $showVerificationWarning = true;
+                $verificationMessage = 'Verifikasi akun Anda ditolak. Alasan: ' . ($user->verification_notes ?? 'Tidak ada catatan dari admin.');
+            } elseif (!$user->is_active) {
+                $showVerificationWarning = true;
+                $verificationMessage = 'Akun Anda sedang dinonaktifkan. Silakan hubungi admin.';
+            }
+        }
+
+        // Ambil tanggal dari session atau dari item pertama
         $first = reset($cartItems);
         $startDate = session('start_date', $first['start_date'] ?? Carbon::now()->toDateString());
         $endDate = session('end_date', $first['end_date'] ?? Carbon::now()->toDateString());
@@ -41,8 +61,17 @@ class CheckoutController extends Controller
 
         $total = $this->calculateTotalFromItems($cartItems);
 
-        return view('checkout.index', compact('cartItems', 'total', 'startDate', 'endDate', 'duration'));
+        return view('checkout.index', compact(
+            'cartItems',
+            'total',
+            'startDate',
+            'endDate',
+            'duration',
+            'showVerificationWarning',
+            'verificationMessage'
+        ));
     }
+
 
     /**
      * Update quantity untuk item (mendukung guest via session & user via DB)
@@ -248,7 +277,14 @@ class CheckoutController extends Controller
         if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu untuk melanjutkan pembayaran.');
         }
-
+         // Cek verifikasi sebelum masuk halaman payment
+        if (!auth()->user()->hasVerifiedEmail()) {
+            return redirect()->route('checkout.index')
+                ->with('error', 'Akun Anda belum diverifikasi. Harap tunggu verifikasi admin.');
+        }
+        
+        // Lanjut proses payment
+        return view('checkout.payment');
         $subtotal = $this->calculateTotalFromItems($cartItems);
         $total = $subtotal + 5000;
 
