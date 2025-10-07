@@ -117,7 +117,7 @@
                     <div class="space-y-4" id="cart-items-container">
                         @foreach($cartItems as $key => $item)
                         <div class="flex items-start space-x-4 p-4 border border-gray-200 rounded-lg cart-item" data-cart-key="{{ $key }}">
-                            <img src="{{ $item['image'] ?? asset('storage/img/default.jpg') }}" 
+                            <img src="{{ asset('storage/' . ($item['image'] ?? 'default.jpg')) }}" 
                                  alt="{{ $item['name'] }}" 
                                  class="w-24 h-24 object-cover rounded-lg">
                             
