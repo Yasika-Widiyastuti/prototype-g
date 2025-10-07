@@ -97,7 +97,7 @@ Route::middleware(['auth', 'user.access'])
 // ==========================
 Route::middleware(['auth', 'user.access'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
-    Route::get('/profile/edit', [RegisterController::class, 'editProfile'])->name('profile.edit');
+    Route::get('/profile/edit', [RegisterController::class, 'edit'])->name('profile.edit');
     Route::post('/profile/edit', [RegisterController::class, 'updateProfile'])->name('profile.update');
 
     Route::get('/profile/change-password', [RegisterController::class, 'showChangePasswordForm'])->name('profile.change-password.form');
@@ -108,6 +108,9 @@ Route::middleware(['auth', 'user.access'])->group(function () {
     // Orders
     Route::get('/profile/orders', [ProfileOrderController::class, 'index'])->name('profile.orders');
     Route::get('/profile/orders/{id}', [ProfileOrderController::class, 'show'])->name('profile.orders.show');
+
+    Route::get('/profile/orders/{id}/review', [ProfileOrderController::class, 'showReviewForm'])->name('profile.orders.review');
+    Route::post('/profile/orders/{id}/review', [ProfileOrderController::class, 'storeReview'])->name('profile.orders.review.store');
 });
 
 // ==========================
@@ -170,4 +173,8 @@ Route::middleware(['auth', 'admin'])
 
         Route::post('orders/{order}/confirm-pickup', [App\Http\Controllers\Admin\OrderController::class, 'confirmPickup'])->name('orders.confirm-pickup');
         Route::post('orders/{order}/confirm-return', [App\Http\Controllers\Admin\OrderController::class, 'confirmReturn'])->name('orders.confirm-return');
+        Route::get('/profile/orders/{order}/review', [OrderController::class, 'showReviewForm'])
+            ->name('profile.orders.review');
+        Route::post('/profile/orders/{order}/review', [OrderController::class, 'storeReview'])
+            ->name('profile.orders.review.store');
     });

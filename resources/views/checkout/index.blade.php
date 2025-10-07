@@ -375,7 +375,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function showNotification(message, type) {
         // Create notification element
         const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ${
+        notification.className = `fixed bottom-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ${
             type === 'success' ? 'bg-green-500' : 'bg-red-500'
         } text-white font-medium`;
         notification.textContent = message;

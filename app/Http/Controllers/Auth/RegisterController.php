@@ -64,4 +64,31 @@ class RegisterController extends Controller
 
         return redirect()->route('signIn')->with('success', 'Akun berhasil dibuat! Silakan login.');
     }
+    public function editProfile()
+    {
+        $user = auth()->user();
+        return view('profile.edit', compact('user'));
+    }
+    public function updateProfile(Request $request)
+    {
+        $user = auth()->user();
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'password' => 'nullable|min:6|confirmed',
+        ]);
+
+        $user->name = $request->name;
+        $user->email = $request->email;
+
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+        return redirect()->route('profile.edit')->with('success', 'Profil berhasil diperbarui.');
+    }
+
 }

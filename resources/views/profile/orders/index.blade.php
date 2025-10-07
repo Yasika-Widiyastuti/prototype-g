@@ -42,9 +42,17 @@
                         <div class="space-y-2">
                             @foreach($order->orderItems->take(2) as $item)
                             <div class="flex items-center space-x-3">
-                                <img src="{{ $item->product->image_url ?? 'https://via.placeholder.com/40' }}" 
-                                     alt="{{ $item->product->name ?? 'Product' }}" 
-                                     class="w-10 h-10 rounded object-cover">
+                                @if($item->product)
+                                    <img src="{{ asset('storage/' . $item->product->image_url) }}" 
+                                         alt="{{ $item->product->name }}" 
+                                         class="w-10 h-10 rounded object-cover">
+                                @else
+                                    <div class="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </div>
+                                @endif
                                 <div class="flex-1">
                                     <p class="text-sm font-medium text-gray-800">{{ $item->product->name ?? 'Product Name' }}</p>
                                     <p class="text-xs text-gray-600">{{ $item->quantity }}x - Rp {{ number_format($item->price, 0, ',', '.') }}</p>
@@ -64,7 +72,7 @@
                             <p class="text-sm text-gray-600">Total Pembayaran</p>
                             <p class="text-lg font-semibold text-gray-800">{{ $order->total_amount_formatted }}</p>
                         </div>
-                        <div class="space-x-2">
+                        <div class="flex space-x-2">
                             <a href="{{ route('profile.orders.show', $order->id) }}" 
                                class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
                                 Lihat Detail

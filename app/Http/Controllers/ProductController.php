@@ -36,17 +36,7 @@ class ProductController extends Controller
     {
         $products = Product::where('category', 'handphone')
                            ->where('is_available', true)
-                           ->where('stock', '>', 0)
-                           ->get()
-                           ->map(function($product) {
-                               return [
-                                   'id' => $product->id,
-                                   'name' => $product->name,
-                                   'price' => $product->price,
-                                   'image' => $product->image_url,
-                                   'description' => $product->description
-                               ];
-                           });
+                           ->get();
         
         return view('handphone.index', compact('products'));
     }
@@ -56,37 +46,19 @@ class ProductController extends Controller
         $product = Product::where('category', 'handphone')
                           ->where('id', $id)
                           ->where('is_available', true)
-                          ->where('stock', '>', 0)
-                          ->first();
+                          ->firstOrFail();
         
         if (!$product) {
             abort(404);
         }
         
-        // Convert to array format for view compatibility
-        $product = [
-            'id' => $product->id,
-            'name' => $product->name,
-            'price' => $product->price,
-            'image' => $product->image_url, // Menggunakan ->image_url
-            'description' => $product->description
-        ];
-        
         $relatedProducts = Product::where('category', 'handphone')
                                  ->where('id', '!=', $id)
                                  ->where('is_available', true)
                                  ->where('stock', '>', 0)
-                                 ->limit(2)
-                                 ->get()
-                                 ->map(function($item) {
-                                     return [
-                                         'id' => $item->id,
-                                         'name' => $item->name,
-                                         'price' => $item->price,
-                                         'image' => $item->image_url,
-                                         'description' => $item->description
-                                     ];
-                                 });
+                                 ->limit(3)
+                                 ->get();
+
         $reviews = Review::where('product_id', $id)
         ->with('user')
         ->latest()
@@ -100,17 +72,7 @@ class ProductController extends Controller
     {
         $products = Product::where('category', 'lightstick')
                            ->where('is_available', true)
-                           ->where('stock', '>', 0)
-                           ->get()
-                           ->map(function($product) {
-                               return [
-                                   'id' => $product->id,
-                                   'name' => $product->name,
-                                   'price' => $product->price,
-                                   'image' => $product->image_url,
-                                   'description' => $product->description
-                               ];
-                           });
+                           ->get();
         
         return view('lightstick.index', compact('products'));
     }
@@ -120,37 +82,19 @@ class ProductController extends Controller
         $product = Product::where('category', 'lightstick')
                           ->where('id', $id)
                           ->where('is_available', true)
-                          ->where('stock', '>', 0)
-                          ->first();
+                          ->firstOrFail();
         
         if (!$product) {
             abort(404);
         }
         
-        // Convert to array format for view compatibility
-        $product = [
-            'id' => $product->id,
-            'name' => $product->name,
-            'price' => $product->price,
-            'image' => $product->image_url,
-            'description' => $product->description
-        ];
-        
         $relatedProducts = Product::where('category', 'lightstick')
                                  ->where('id', '!=', $id)
                                  ->where('is_available', true)
                                  ->where('stock', '>', 0)
-                                 ->limit(2)
-                                 ->get()
-                                 ->map(function($item) {
-                                     return [
-                                         'id' => $item->id,
-                                         'name' => $item->name,
-                                         'price' => $item->price,
-                                         'image' => $item->image_url,
-                                         'description' => $item->description
-                                     ];
-                                 });
+                                 ->limit(3)
+                                 ->get();
+
         $reviews = Review::where('product_id', $id)
         ->with('user')
         ->latest()
@@ -164,17 +108,7 @@ class ProductController extends Controller
     {
         $products = Product::where('category', 'powerbank')
                            ->where('is_available', true)
-                           ->where('stock', '>', 0)
-                           ->get()
-                           ->map(function($product) {
-                               return [
-                                   'id' => $product->id,
-                                   'name' => $product->name,
-                                   'price' => $product->price,
-                                   'image' => $product->image_url,
-                                   'description' => $product->description
-                               ];
-                           });
+                           ->get();
         
         return view('powerbank.index', compact('products'));
     }
@@ -184,37 +118,19 @@ class ProductController extends Controller
         $product = Product::where('category', 'powerbank')
                           ->where('id', $id)
                           ->where('is_available', true)
-                          ->where('stock', '>', 0)
-                          ->first();
+                          ->firstOrFail();
         
         if (!$product) {
             abort(404);
         }
         
-        // Convert to array format for view compatibility
-        $product = [
-            'id' => $product->id,
-            'name' => $product->name,
-            'price' => $product->price,
-            'image' => $product->image_url,
-            'description' => $product->description
-        ];
-        
         $relatedProducts = Product::where('category', 'powerbank')
                                  ->where('id', '!=', $id)
                                  ->where('is_available', true)
                                  ->where('stock', '>', 0)
-                                 ->limit(2)
-                                 ->get()
-                                 ->map(function($item) {
-                                     return [
-                                         'id' => $item->id,
-                                         'name' => $item->name,
-                                         'price' => $item->price,
-                                         'image' => $item->image_url,
-                                         'description' => $item->description
-                                     ];
-                                 });
+                                 ->limit(3)
+                                 ->get();
+                                 
         $reviews = Review::where('product_id', $id)
         ->with('user')
         ->latest()
