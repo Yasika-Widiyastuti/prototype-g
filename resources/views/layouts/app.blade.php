@@ -183,19 +183,25 @@
                         </div>
                     @endguest
 
-                    <!-- Shopping Cart -->
-                    <a href="{{ route('checkout.index') }}" id="cart-link" class="relative hover:text-yellow-500 transition">
+                    <!-- Shopping Cart - FIXED: Langsung ke checkout -->
+                    <a href="{{ route('checkout.index') }}" class="relative hover:text-yellow-500 transition">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                 d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.195.195-.195.512 0 .707L7 18h12M9 19a2 2 0 100 4 2 2 0 000-4zM20 19a2 2 0 100 4 2 2 0 000-4z">
                             </path>
                         </svg>
-                        @if(($globalCartCount ?? session('cart_count', 0)) > 0)
+                        @php
+                            $cartCount = \App\Http\Controllers\CheckoutController::getCartCount();
+                        @endphp
+                        @if($cartCount > 0)
                         <span id="cart-counter" class="cart-counter absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                            <span id="cart-count">{{ $globalCartCount ?? session('cart_count', 0) }}</span>
+                            <span id="cart-count">{{ $cartCount }}</span>
+                        </span>
+                        @else
+                        <span id="cart-counter" class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            <span id="cart-count">0</span>
                         </span>
                         @endif
-
                     </a>
                 </div>
 
@@ -229,8 +235,8 @@
                             <a href="{{ route('signIn') }}" class="block px-4 py-2 hover:bg-gray-700 hover:text-yellow-500 transition">Masuk</a>
                             <a href="{{ route('create-account') }}" class="block px-4 py-2 hover:bg-gray-700 hover:text-yellow-500 transition">Daftar</a>
                         @else
-                            <a href="#" class="block px-4 py-2 hover:bg-gray-700 hover:text-yellow-500 transition">Profile</a>
-                            <a href="#" class="block px-4 py-2 hover:bg-gray-700 hover:text-yellow-500 transition">Pesanan</a>
+                            <a href="{{ route('profile.index') }}" class="block px-4 py-2 hover:bg-gray-700 hover:text-yellow-500 transition">Profile</a>
+                            <a href="{{ route('profile.orders') }}" class="block px-4 py-2 hover:bg-gray-700 hover:text-yellow-500 transition">Pesanan</a>
                             <form action="{{ route('logout') }}" method="POST">
                                 @csrf
                                 <button type="submit" class="w-full text-left px-4 py-2 hover:bg-gray-700 text-red-400 transition">Logout</button>
@@ -238,16 +244,25 @@
                         @endguest
                     </div>
                     
-                    <!-- Mobile Cart -->
+                    <!-- Mobile Cart - FIXED: Langsung ke checkout -->
                     <div class="border-t border-gray-700 pt-2">
                         <a href="{{ route('checkout.index') }}" class="flex items-center px-4 py-2 hover:bg-gray-700 hover:text-yellow-500 transition">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.195.195-.195.512 0 .707L7 18h12M9 19a2 2 0 100 4 2 2 0 000-4zM20 19a2 2 0 100 4 2 2 0 000-4z"></path>
                             </svg>
-                            Keranjang 
-                            <span id="mobile-cart-counter" class="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full {{  $globalCartCount ?? session('cart_count', 0) }}">
-                                <span id="mobile-cart-count">{{  $globalCartCount ?? session('cart_count', 0) }}</span>
+                            Keranjang
+                            @php
+                                $mobileCartCount = \App\Http\Controllers\CheckoutController::getCartCount();
+                            @endphp
+                            @if($mobileCartCount > 0)
+                            <span id="mobile-cart-counter" class="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                                <span id="mobile-cart-count">{{ $mobileCartCount }}</span>
                             </span>
+                            @else
+                            <span id="mobile-cart-counter" class="hidden ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                                <span id="mobile-cart-count">0</span>
+                            </span>
+                            @endif
                         </a>
                     </div>
                 </nav>
@@ -391,7 +406,6 @@
     @stack('scripts')
     
     <!-- Global Cart Management Script -->
-    <!-- Tambahkan di bagian <script> sebelum closing </body> -->
     <script>
         // Function to update cart counter
         function updateCartCounter(count) {

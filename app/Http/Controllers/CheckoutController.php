@@ -22,8 +22,17 @@ class CheckoutController extends Controller
     {
         $cartItems = $this->getDetailedCartItems();
 
+        // PERBAIKAN: Tetap tampilkan halaman checkout meski kosong
         if (empty($cartItems)) {
-            return redirect()->route('home')->with('error', 'Keranjang Anda kosong.');
+            $this->updateCartCount();
+            return view('checkout.index', [
+                'cartItems' => [],
+                'total' => 0,
+                'startDate' => Carbon::now()->toDateString(),
+                'endDate' => Carbon::now()->toDateString(),
+                'duration' => 1,
+                'isEmpty' => true // Flag untuk template
+            ]);
         }
 
         $first = reset($cartItems);
@@ -117,6 +126,9 @@ class CheckoutController extends Controller
             $formattedItemSubtotal = number_format($subtotal, 0, ',', '.');
         }
 
+        // Cek apakah cart sekarang kosong
+        $cartEmpty = empty($newCartItems);
+
         return response()->json([
             'success' => true,
             'cart_count' => $cartCount,
@@ -125,6 +137,7 @@ class CheckoutController extends Controller
             'item_removed' => $itemRemoved,
             'new_quantity' => $newQuantity,
             'formatted_item_subtotal' => $formattedItemSubtotal,
+            'cart_empty' => $cartEmpty, // Flag untuk reload halaman
             'message' => $itemRemoved ? 'Produk berhasil dihapus dari keranjang' : 'Barang berhasil diupdate'
         ]);
     }
@@ -164,11 +177,15 @@ class CheckoutController extends Controller
         $cartCount = $this->calculateCartCount($newCartItems);
         session()->put('cart_count', $cartCount);
 
+        // Cek apakah cart sekarang kosong
+        $cartEmpty = empty($newCartItems);
+
         return response()->json([
             'success' => true,
             'cart_count' => $cartCount,
             'new_total' => $newTotal,
             'formatted_total' => number_format($newTotal, 0, ',', '.'),
+            'cart_empty' => $cartEmpty, // Flag untuk reload halaman
             'message' => 'Produk berhasil dihapus dari keranjang'
         ]);
     }
@@ -241,7 +258,7 @@ class CheckoutController extends Controller
     {
         $cartItems = $this->getDetailedCartItems();
         if (empty($cartItems)) {
-            return redirect()->route('home')->with('error', 'Keranjang Anda kosong.');
+            return redirect()->route('checkout.index')->with('error', 'Keranjang Anda kosong.');
         }
 
         if (!Auth::check()) {
@@ -273,7 +290,7 @@ class CheckoutController extends Controller
     {
         $cartItems = $this->getDetailedCartItems();
         if (empty($cartItems)) {
-            return redirect()->route('home')->with('error', 'Keranjang Anda kosong.');
+            return redirect()->route('checkout.index')->with('error', 'Keranjang Anda kosong.');
         }
 
         if (!Auth::check()) {
@@ -327,7 +344,7 @@ class CheckoutController extends Controller
             $cartItems = Cart::where('user_id', Auth::id())->with('product')->get();
 
             if ($cartItems->isEmpty()) {
-                return redirect()->route('home')->with('error', 'Keranjang kosong');
+                return redirect()->route('checkout.index')->with('error', 'Keranjang kosong');
             }
 
             $subtotal = 0;
