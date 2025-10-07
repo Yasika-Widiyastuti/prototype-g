@@ -318,6 +318,7 @@ class CheckoutController extends Controller
 
     /**
      * Upload bukti transfer & create order
+     * ✅ PERBAIKAN: Simpan order_id di payment
      */
     public function paymentStatus(Request $request)
     {
@@ -362,6 +363,7 @@ class CheckoutController extends Controller
                 $paymentProofPath = $file->storeAs('payment_proofs', $filename, 'public');
             }
 
+            // 1. Buat Order dulu
             $order = Order::create([
                 'user_id' => Auth::id(),
                 'total_amount' => $totalAmount,
@@ -372,6 +374,7 @@ class CheckoutController extends Controller
                 'rental_days' => $cartItems->first()->duration ?? 1,
             ]);
 
+            // 2. Buat Order Items
             foreach ($cartItems as $cartItem) {
                 if (!$cartItem->product) continue;
 
@@ -385,6 +388,7 @@ class CheckoutController extends Controller
                     'total' => $lineTotal,
                 ]);
 
+                // Update stok produk
                 $product = Product::find($cartItem->product_id);
                 if ($product) {
                     $product->stock = max(0, $product->stock - $cartItem->quantity);
@@ -392,26 +396,26 @@ class CheckoutController extends Controller
                 }
             }
 
+            // 3. ✅ Buat Payment dengan order_id
             if (class_exists(Payment::class)) {
                 Payment::create([
                     'user_id' => Auth::id(),
-                    'order_id' => $order->id,
+                    'order_id' => $order->id, // 🔥 PENTING: Simpan order_id
                     'bank' => $selectedBankKey,
                     'bukti_transfer' => $paymentProofPath,
                     'status' => 'waiting',
                 ]);
             }
 
+            // 4. Hapus cart
             Cart::where('user_id', Auth::id())->delete();
             session()->forget(['cart', 'cart_count', 'selected_bank', 'payment_method', 'start_date', 'end_date']);
 
             DB::commit();
 
-            $payment = (object)[
-                'status' => 'waiting',
-                'order' => $order
-            ];
-
+            // 5. Redirect ke status page
+            $payment = Payment::where('order_id', $order->id)->first();
+            
             return view('checkout.status', compact('payment'));
 
         } catch (\Exception $e) {

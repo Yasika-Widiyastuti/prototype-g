@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -8,6 +9,8 @@ use App\Services\NotificationService;
 use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -22,7 +25,7 @@ class PaymentController extends Controller
 
     public function index(Request $request)
     {
-        $query = Payment::with('user');
+        $query = Payment::with(['user', 'order']);
 
         if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
@@ -34,6 +37,9 @@ class PaymentController extends Controller
                   ->orWhereHas('user', function($userQuery) use ($request) {
                       $userQuery->where('name', 'like', '%' . $request->search . '%')
                                ->orWhere('email', 'like', '%' . $request->search . '%');
+                  })
+                  ->orWhereHas('order', function($orderQuery) use ($request) {
+                      $orderQuery->where('order_number', 'like', '%' . $request->search . '%');
                   });
             });
         }
@@ -45,17 +51,30 @@ class PaymentController extends Controller
 
     public function show(Payment $payment)
     {
-        $payment->load('user');
+        // Load relasi
+        $payment->load(['user', 'order.orderItems.product', 'verifier']);
         
-        $relatedOrders = Order::where('user_id', $payment->user_id)
-            ->where('status', 'pending')
-            ->with('orderItems.product')
-            ->latest()
-            ->get();
+        // Ambil order yang terkait dengan payment ini
+        $relatedOrders = [];
+        if ($payment->order_id) {
+            $relatedOrders = Order::where('id', $payment->order_id)
+                ->with('orderItems.product')
+                ->get();
+        } else {
+            // Fallback: cari order pending dari user yang sama
+            $relatedOrders = Order::where('user_id', $payment->user_id)
+                ->whereIn('status', ['pending', 'waiting_verification'])
+                ->with('orderItems.product')
+                ->latest()
+                ->get();
+        }
 
         return view('admin.payments.show', compact('payment', 'relatedOrders'));
     }
 
+    /**
+     * ✅ UPDATE STATUS PAYMENT (Auto-update Order via Model Event)
+     */
     public function updateStatus(Request $request, Payment $payment)
     {
         $request->validate([
@@ -65,36 +84,184 @@ class PaymentController extends Controller
 
         $oldStatus = $payment->status;
 
-        // Update payment
-        $payment->update([
-            'status' => $request->status,
-            'notes' => $request->admin_notes,
-            'verified_by' => Auth::id(),
-            'verified_at' => now(),
-        ]);
+        DB::beginTransaction();
+        try {
+            // Update payment
+            $updateData = [
+                'status' => $request->status,
+                'verified_by' => Auth::id(),
+                'verified_at' => now(),
+            ];
 
-        // ✅ UPDATE ORDER OTOMATIS (tidak perlu pilih manual)
-        if ($request->status === 'success' && $payment->order) {
-            $payment->order->update([
-                'status' => 'confirmed', // atau 'paid', sesuai kebutuhan
-                'payment_verified_at' => now(),
+            // Jika ada notes admin
+            if ($request->filled('admin_notes')) {
+                $updateData['notes'] = $request->admin_notes;
+                
+                // Jika status failed, simpan juga di rejection_reason
+                if ($request->status === 'failed') {
+                    $updateData['rejection_reason'] = $request->admin_notes;
+                }
+            }
+
+            $payment->update($updateData);
+
+            // 🔥 Order akan otomatis terupdate melalui Payment::boot() event
+            // Tapi kita pastikan order ada dan log aktifitasnya
+            if ($payment->order) {
+                $newOrderStatus = match($request->status) {
+                    'success' => 'confirmed',
+                    'failed' => 'cancelled',
+                    default => $payment->order->status
+                };
+
+                // Activity log untuk order
+                if ($payment->order->status !== $newOrderStatus) {
+                    $this->activityLogService->logOrderStatusChange(
+                        $payment->order, 
+                        $payment->order->status, 
+                        $newOrderStatus
+                    );
+                }
+
+                // Notifikasi order
+                $this->notificationService->notifyOrderStatusChange(
+                    $payment->order,
+                    $payment->order->status,
+                    $newOrderStatus
+                );
+            }
+
+            // Activity log untuk payment
+            $this->activityLogService->logPaymentVerification($payment, $request->status);
+
+            // Notifikasi payment ke user
+            $this->notificationService->notifyPaymentStatusChange(
+                $payment,
+                $oldStatus,
+                $request->status,
+                $payment->order
+            );
+
+            DB::commit();
+
+            $message = match($request->status) {
+                'success' => 'Pembayaran berhasil disetujui dan order telah dikonfirmasi',
+                'failed' => 'Pembayaran ditolak dan order telah dibatalkan',
+                default => 'Status pembayaran berhasil diupdate'
+            };
+
+            return redirect()->route('admin.payments.index')->with('success', $message);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Payment update error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * ✅ APPROVE Payment (shortcut method)
+     */
+    public function approve(Payment $payment)
+    {
+        DB::beginTransaction();
+        try {
+            $oldStatus = $payment->status;
+
+            $payment->update([
+                'status' => 'success',
+                'verified_by' => Auth::id(),
+                'verified_at' => now(),
             ]);
 
-            // Activity log & notifikasi
-            $this->activityLogService->logOrderStatusChange($payment->order, 'waiting_verification', 'confirmed');
-            $this->notificationService->notifyOrderStatusChange($payment->order, 'waiting_verification', 'confirmed');
+            // Order otomatis terupdate via model event
+            if ($payment->order) {
+                $this->activityLogService->logOrderStatusChange(
+                    $payment->order,
+                    $payment->order->status,
+                    'confirmed'
+                );
+
+                $this->notificationService->notifyOrderStatusChange(
+                    $payment->order,
+                    $payment->order->status,
+                    'confirmed'
+                );
+            }
+
+            $this->activityLogService->logPaymentVerification($payment, 'success');
+            $this->notificationService->notifyPaymentStatusChange(
+                $payment,
+                $oldStatus,
+                'success',
+                $payment->order
+            );
+
+            DB::commit();
+
+            return redirect()->route('admin.payments.index')
+                ->with('success', 'Pembayaran berhasil disetujui!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Payment approval error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
 
-        // Activity log & notifikasi payment
-        $this->activityLogService->logPaymentVerification($payment, $request->status);
-        $this->notificationService->notifyPaymentStatusChange(
-            $payment,
-            $oldStatus,
-            $request->status,
-            $payment->order
-        );
+    /**
+     * ✅ REJECT Payment (dengan alasan)
+     */
+    public function reject(Request $request, Payment $payment)
+    {
+        $request->validate([
+            'rejection_reason' => 'required|string|max:500'
+        ]);
 
-        $message = $request->status === 'success' ? 'Pembayaran berhasil disetujui' : 'Pembayaran ditolak';
-        return redirect()->route('admin.payments.index')->with('success', $message);
+        DB::beginTransaction();
+        try {
+            $oldStatus = $payment->status;
+
+            $payment->update([
+                'status' => 'failed',
+                'rejection_reason' => $request->rejection_reason,
+                'notes' => $request->rejection_reason,
+                'verified_by' => Auth::id(),
+                'verified_at' => now(),
+            ]);
+
+            // Order otomatis terupdate via model event
+            if ($payment->order) {
+                $this->activityLogService->logOrderStatusChange(
+                    $payment->order,
+                    $payment->order->status,
+                    'cancelled'
+                );
+
+                $this->notificationService->notifyOrderStatusChange(
+                    $payment->order,
+                    $payment->order->status,
+                    'cancelled'
+                );
+            }
+
+            $this->activityLogService->logPaymentVerification($payment, 'failed');
+            $this->notificationService->notifyPaymentStatusChange(
+                $payment,
+                $oldStatus,
+                'failed',
+                $payment->order
+            );
+
+            DB::commit();
+
+            return redirect()->route('admin.payments.index')
+                ->with('success', 'Pembayaran ditolak dan customer telah diberitahu.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Payment rejection error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 }
