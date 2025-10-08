@@ -18,6 +18,9 @@ class CheckoutController extends Controller
     /**
      * Step 1: Halaman checkout
      */
+/**
+     * Step 1: Halaman checkout
+     */
     public function index()
     {
         $cartItems = $this->getDetailedCartItems();
@@ -31,8 +34,34 @@ class CheckoutController extends Controller
                 'startDate' => Carbon::now()->toDateString(),
                 'endDate' => Carbon::now()->toDateString(),
                 'duration' => 1,
-                'isEmpty' => true // Flag untuk template
+                'isEmpty' => true,
+                'showVerificationWarning' => false,
+                'verificationMessage' => null,
+                'canCheckout' => true
             ]);
+        }
+
+        // Cek status verifikasi user (bukan email verification)
+        $showVerificationWarning = false;
+        $verificationMessage = null;
+        $canCheckout = true; // Default: bisa checkout
+
+        if (auth()->check()) {
+            $user = auth()->user();
+
+            if ($user->verification_status === 'pending') {
+                $showVerificationWarning = true;
+                $canCheckout = false; // 🔥 Tidak bisa checkout
+                $verificationMessage = 'Akun Anda masih menunggu verifikasi admin. Anda belum bisa melanjutkan checkout.';
+            } elseif ($user->verification_status === 'rejected') {
+                $showVerificationWarning = true;
+                $canCheckout = false; // 🔥 Tidak bisa checkout
+                $verificationMessage = 'Verifikasi akun Anda ditolak. Alasan: ' . ($user->verification_notes ?? 'Tidak ada catatan dari admin.');
+            } elseif (!$user->is_active) {
+                $showVerificationWarning = true;
+                $canCheckout = false; // 🔥 Tidak bisa checkout
+                $verificationMessage = 'Akun Anda sedang dinonaktifkan. Silakan hubungi admin.';
+            }
         }
 
         $first = reset($cartItems);
@@ -45,9 +74,8 @@ class CheckoutController extends Controller
         // PENTING: Update cart_count dengan TOTAL QUANTITY (bukan unique items)
         $this->updateCartCount();
 
-        return view('checkout.index', compact('cartItems', 'total', 'startDate', 'endDate', 'duration'));
+        return view('checkout.index', compact('cartItems', 'total', 'startDate', 'endDate', 'duration', 'showVerificationWarning', 'verificationMessage', 'canCheckout'));
     }
-
     /**
      * Update quantity
      */
@@ -263,6 +291,28 @@ class CheckoutController extends Controller
 
         if (!Auth::check()) {
             return redirect()->route('signIn')->with('error', 'Silakan login terlebih dahulu untuk melanjutkan pembayaran.');
+        }
+
+        // Cek verifikasi sebelum masuk halaman payment
+        $user = auth()->user();
+         if ($user->verification_status !== 'approved') {
+            return redirect()->route('checkout.index')
+                ->with('error', 'Akun Anda belum diverifikasi. Silakan upload dokumen dan tunggu verifikasi admin.');
+        }
+        
+        if ($user->verification_status === 'pending') {
+            return redirect()->route('checkout.index')
+                ->with('error', 'Akun Anda masih menunggu verifikasi admin. Harap tunggu verifikasi admin.');
+        }
+        
+        if ($user->verification_status === 'rejected') {
+            return redirect()->route('checkout.index')
+                ->with('error', 'Verifikasi akun Anda ditolak. Silakan hubungi admin.');
+        }
+
+        if (!$user->is_active) {
+            return redirect()->route('checkout.index')
+                ->with('error', 'Akun Anda sedang dinonaktifkan. Silakan hubungi admin.');
         }
 
         $subtotal = $this->calculateTotalFromItems($cartItems);
@@ -540,6 +590,6 @@ class CheckoutController extends Controller
                 'rekening' => '1122334455',
                 'an'       => 'PT Sewa Konser Indonesia',
             ],
-        ];
-    }
+  ];
+}
 }

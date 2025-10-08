@@ -16,6 +16,22 @@
     <!-- Page Title -->
     <h1 class="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
 
+    {{-- Alert Verifikasi Akun --}}
+    @if(isset($showVerificationWarning) && $showVerificationWarning)
+        <div class="mb-6 p-4 rounded-lg 
+            @if(str_contains($verificationMessage, 'menunggu')) bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 
+            @elseif(str_contains($verificationMessage, 'ditolak')) bg-red-100 border-l-4 border-red-500 text-red-800 
+            @else bg-gray-100 border-l-4 border-gray-500 text-gray-800 
+            @endif">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                </svg>
+                <span class="font-medium">{{ $verificationMessage }}</span>
+            </div>
+        </div>
+    @endif
+
     <!-- Progress Steps -->
     <div class="flex items-center justify-center mb-12">
         <div class="flex items-center space-x-4">
@@ -170,9 +186,10 @@
                 </div>
             </div>
 
-            <!-- Right Column: Order Summary -->
-            <div class="lg:col-span-1">
-                <div class="bg-white rounded-lg shadow-md p-6 sticky top-4">
+            <!-- Right Column: Order Summary & Location -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Order Summary -->
+                <div class="bg-white rounded-lg shadow-md p-6 top-4">
                     <h2 class="text-xl font-bold text-gray-900 mb-6">Ringkasan Pesanan</h2>
                     
                     <div class="space-y-3 mb-6">
@@ -190,24 +207,101 @@
                         </div>
                     </div>
                     
-                    <button type="button" 
-                            id="proceed-btn"
-                            onclick="window.location.href='{{ route('checkout.payment') }}'"
-                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-lg transition transform hover:scale-105">
-                        Lanjut ke Pembayaran
-                    </button>
+                    @if(auth()->check() && isset($canCheckout) && $canCheckout)
+                        <button type="button" 
+                                id="proceed-btn"
+                                onclick="window.location.href='{{ route('checkout.payment') }}'"
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-lg transition transform hover:scale-105">
+                            Lanjut ke Pembayaran
+                        </button>
+                    @elseif(!auth()->check())
+                        <button type="button"
+                                onclick="window.location.href='{{ route('signIn') }}'"
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-lg transition transform hover:scale-105">
+                            Login untuk Checkout
+                        </button>
+                    @else
+                        <button disabled 
+                                class="w-full bg-gray-300 text-gray-500 font-bold py-4 rounded-lg cursor-not-allowed relative group"
+                                title="Akun Anda belum dapat melakukan checkout">
+                            <span class="flex items-center justify-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                                Lanjut ke Pembayaran
+                            </span>
+                        </button>
+                        <p class="text-xs text-center text-gray-500 mt-2">
+                            @if(auth()->user()->verification_status === 'pending')
+                                Menunggu verifikasi admin
+                            @elseif(auth()->user()->verification_status === 'rejected')
+                                Verifikasi ditolak - Hubungi admin
+                            @else
+                                Upload dokumen untuk verifikasi
+                            @endif
+                        </p>
+                    @endif
                     
                     <a href="{{ route('shop') }}" 
                        class="block text-center text-blue-600 hover:text-blue-700 font-medium mt-4 transition">
                         ← Lanjut Belanja
                     </a>
                 </div>
+
+                <!-- Location & Deposit Information -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-sm border border-blue-200 p-6">
+                    <div class="flex items-start space-x-3 mb-4">
+                        <svg class="w-6 h-6 text-blue-600 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-gray-900 mb-3">Lokasi Pengambilan & Pengembalian Barang</h3>
+                            
+                            <div class="space-y-3">
+                                <div class="flex items-start space-x-3">
+                                    <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-700">Alamat:</p>
+                                        <p class="text-gray-900">Jalan RM Kahfi 1 Gang Asem RT 10 RW 06 Cipedak Jagakarsa Jakarta Selatan</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-start space-x-3">
+                                    <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-700">Jam Operasional:</p>
+                                        <p class="text-gray-900">09.00–17.00 WIB</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 pt-4 border-t border-blue-200">
+                                <p class="text-sm font-semibold text-gray-900 mb-2">⚠ Catatan Penting:</p>
+                                <ul class="space-y-2 text-sm text-gray-700">
+                                    <li class="flex items-start">
+                                        <span class="text-blue-600 mr-2">•</span>
+                                        <span>Saat pengambilan, harap membawa <strong>KTP asli</strong> untuk verifikasi dan jaminan.</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-blue-600 mr-2">•</span>
+                                        <span>Dikenakan deposit <strong class="text-orange-600">Rp 300.000</strong>, akan dikembalikan setelah barang dikembalikan dalam kondisi baik.</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     @endif
 </div>
 
-<!-- JavaScript for AJAX operations -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Duration Update Form
@@ -233,10 +327,8 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Update duration display
                     document.getElementById('duration-display').textContent = data.duration + ' hari';
                     
-                    // Update all item subtotals
                     Object.keys(data.items).forEach(key => {
                         const itemEl = document.querySelector(`[data-cart-key="${key}"]`);
                         if (itemEl) {
@@ -245,7 +337,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     });
                     
-                    // Update total
                     document.getElementById('subtotal-display').textContent = 'Rp ' + data.formatted_total;
                     const totalWithAdmin = parseInt(data.new_total) + 5000;
                     document.getElementById('total-display').textContent = 
@@ -284,18 +375,18 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success) {
                     if (data.cart_empty) {
-                        // Reload page to show empty state
                         window.location.reload();
                     } else if (data.item_removed) {
-                        // Remove item from DOM
-                        document.querySelector(`[data-cart-key="${cartKey}"]`).remove();
+                        const itemEl = document.querySelector(`[data-cart-key="${cartKey}"]`);
+                        if (itemEl) itemEl.remove();
                         updateTotals(data);
                         updateCartBadge(data.cart_count);
                     } else {
-                        // Update quantity display
                         const itemEl = document.querySelector(`[data-cart-key="${cartKey}"]`);
-                        itemEl.querySelector('.quantity-value').textContent = data.new_quantity;
-                        itemEl.querySelector('.item-subtotal').textContent = 'Rp ' + data.formatted_item_subtotal;
+                        if (itemEl) {
+                            itemEl.querySelector('.quantity-value').textContent = data.new_quantity;
+                            itemEl.querySelector('.item-subtotal').textContent = 'Rp ' + data.formatted_item_subtotal;
+                        }
                         updateTotals(data);
                         updateCartBadge(data.cart_count);
                     }
@@ -333,10 +424,10 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success) {
                     if (data.cart_empty) {
-                        // Reload page to show empty state
                         window.location.reload();
                     } else {
-                        document.querySelector(`[data-cart-key="${cartKey}"]`).remove();
+                        const itemEl = document.querySelector(`[data-cart-key="${cartKey}"]`);
+                        if (itemEl) itemEl.remove();
                         updateTotals(data);
                         updateCartBadge(data.cart_count);
                     }
@@ -373,7 +464,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function showNotification(message, type) {
-        // Create notification element
         const notification = document.createElement('div');
         notification.className = `fixed bottom-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ${
             type === 'success' ? 'bg-green-500' : 'bg-red-500'
@@ -382,10 +472,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         document.body.appendChild(notification);
         
-        // Animate in
         setTimeout(() => notification.classList.add('translate-x-0'), 10);
         
-        // Remove after 3 seconds
         setTimeout(() => {
             notification.classList.add('opacity-0', 'translate-x-full');
             setTimeout(() => notification.remove(), 300);

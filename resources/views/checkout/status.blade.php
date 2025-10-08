@@ -13,30 +13,30 @@
 @endsection
 
 @section('content')
-<div class="py-12 bg-gray-50">
+<div class="py-12 bg-gradient-to-br from-[#D5DEEF] to-[#B1C9EF]">
     <div class="max-w-4xl mx-auto px-4 sm:px-6">
         <div class="bg-white rounded-xl shadow-lg p-8">
             @if ($payment->status == 'waiting')
                 <!-- Waiting Status -->
                 <div class="text-center">
-                    <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-6">
-                        <svg class="h-8 w-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mb-6">
+                        <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-4">Pembayaran Sedang Diverifikasi</h1>
-                    <p class="text-lg text-gray-600 mb-8">
+                    <h1 class="text-3xl font-bold text-[#2d4a6b] mb-4">Pembayaran Sedang Diverifikasi</h1>
+                    <p class="text-lg text-[#395886] mb-8">
                         Terima kasih! Bukti pembayaran Anda telah kami terima dan sedang dalam proses verifikasi.
                     </p>
                 </div>
 
-                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8">
+                <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 mb-8">
                     <div class="space-y-4">
                         <div class="flex items-start">
-                            <div class="flex-shrink-0 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-4 mt-0.5">1</div>
+                            <div class="flex-shrink-0 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-4 mt-0.5">1</div>
                             <div>
-                                <h4 class="font-medium text-yellow-900">Verifikasi Pembayaran</h4>
-                                <p class="text-yellow-700">Tim kami akan memverifikasi pembayaran Anda dalam 1-2 jam kerja</p>
+                                <h4 class="font-medium text-blue-900">Verifikasi Pembayaran</h4>
+                                <p class="text-blue-700">Tim kami akan memverifikasi pembayaran Anda dalam 1-2 jam kerja</p>
                             </div>
                         </div>
                         <div class="flex items-start">
@@ -64,13 +64,13 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
                     </div>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-4">Pembayaran Berhasil!</h1>
-                    <p class="text-lg text-gray-600 mb-8">
+                    <h1 class="text-3xl font-bold text-[#2d4a6b] mb-4">Pembayaran Berhasil!</h1>
+                    <p class="text-lg text-[#395886] mb-8">
                         Selamat! Pembayaran Anda telah dikonfirmasi dan pesanan akan segera diproses.
                     </p>
                 </div>
 
-                <div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-8">
+                <div class="bg-green-50 border-2 border-green-200 rounded-lg p-6 mb-8">
                     <h3 class="text-lg font-semibold text-green-800 mb-4">Pesanan Anda</h3>
                     <div class="space-y-2 text-green-700">
                         <p><span class="font-medium">Nomor Pesanan:</span> #ORDER-2025-001</p>
@@ -87,13 +87,13 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </div>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-4">Pembayaran Gagal</h1>
-                    <p class="text-lg text-gray-600 mb-8">
+                    <h1 class="text-3xl font-bold text-[#2d4a6b] mb-4">Pembayaran Gagal</h1>
+                    <p class="text-lg text-[#395886] mb-8">
                         Maaf, ada masalah dengan bukti pembayaran yang Anda kirimkan.
                     </p>
                 </div>
 
-                <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+                <div class="bg-red-50 border-2 border-red-200 rounded-lg p-6 mb-8">
                     <h3 class="text-lg font-semibold text-red-800 mb-4">Kemungkinan Masalah</h3>
                     <ul class="text-red-700 list-disc list-inside space-y-1">
                         <li>Nominal transfer tidak sesuai dengan total pembayaran</li>
@@ -105,25 +105,25 @@
             @endif
 
             <!-- Contact Info -->
-            <div class="bg-gray-50 rounded-lg p-6 mb-8">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Butuh Bantuan?</h3>
+            <div class="bg-gradient-to-br from-[#D5DEEF] to-[#B1C9EF] rounded-lg p-6 mb-8">
+                <h3 class="text-lg font-semibold text-[#2d4a6b] mb-4">Butuh Bantuan?</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex items-center">
-                        <svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-center bg-white rounded-lg p-4 shadow-sm">
+                        <svg class="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12.04 2c-5.51 0-10 4.49-10 10 0 1.77.47 3.5 1.37 5.02L2 22l5.11-1.34c1.45.79 3.09 1.2 4.75 1.2h.01c5.51 0 10-4.49 10-10s-4.49-10-10-10z"/>
                         </svg>
                         <div>
-                            <p class="font-medium text-gray-900">WhatsApp</p>
-                            <p class="text-gray-600">+62 812 3456 7890</p>
+                            <p class="font-medium text-[#2d4a6b]">WhatsApp</p>
+                            <p class="text-[#395886]">+62 812 3456 7890</p>
                         </div>
                     </div>
-                    <div class="flex items-center">
-                        <svg class="w-5 h-5 text-blue-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-center bg-white rounded-lg p-4 shadow-sm">
+                        <svg class="w-5 h-5 text-[#395886] mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                         </svg>
                         <div>
-                            <p class="font-medium text-gray-900">Email</p>
-                            <p class="text-gray-600">info@sewakonser.com</p>
+                            <p class="font-medium text-[#2d4a6b]">Email</p>
+                            <p class="text-[#395886]">info@sewakonser.com</p>
                         </div>
                     </div>
                 </div>
@@ -132,23 +132,23 @@
             <!-- Action Buttons -->
             <div class="text-center space-x-4">
                 <a href="{{ route('home') }}" 
-                class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-6 py-3 rounded-lg transition">
+                class="bg-[#D5DEEF] hover:bg-[#B1C9EF] text-[#395886] font-medium px-6 py-3 rounded-lg transition inline-block">
                     Kembali ke Beranda
                 </a>
 
                 @if ($payment->status === 'waiting')
                     <a href="{{ route('profile.orders') }}" 
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition">
+                    class="bg-[#395886] hover:bg-[#2d4a6b] text-white font-medium px-6 py-3 rounded-lg transition inline-block">
                         Lihat Pesanan Saya
                     </a>
                 @elseif ($payment->status === 'failed')
                     <a href="{{ route('checkout.confirmation') }}" 
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition">
+                    class="bg-[#395886] hover:bg-[#2d4a6b] text-white font-medium px-6 py-3 rounded-lg transition inline-block">
                         Coba Upload Ulang
                     </a>
                 @elseif ($payment->status === 'success')
                     <a href="{{ route('shop') }}" 
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition">
+                    class="bg-[#395886] hover:bg-[#2d4a6b] text-white font-medium px-6 py-3 rounded-lg transition inline-block">
                         Lanjut Belanja
                     </a>
                 @endif

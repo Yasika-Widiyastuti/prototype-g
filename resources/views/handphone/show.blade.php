@@ -18,7 +18,13 @@
 </li>
 @endsection
 
+
+
+
 @section('content')
+<div class="container mx-auto px-4 py-8">
+    @include('partials.verification-alert')
+
 <div class="py-12 bg-gray-50">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="bg-white p-8 rounded-xl shadow-lg mb-12">

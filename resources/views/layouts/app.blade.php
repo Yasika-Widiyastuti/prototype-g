@@ -16,6 +16,17 @@
     
     <!-- Custom Styles -->
     <style>
+        /* Custom Color Palette */
+        :root {
+            --color-primary: #395886;
+            --color-secondary: #B1C9EF;
+            --color-hover: #D5DEEF;
+            --color-mobile-bg: #2d4a6b;
+            --color-border: #4a5f7e;
+            --color-hover-btn: #9db8e0;
+            --color-footer: #000000;
+        }
+        
         /* Smooth scrolling */
         html {
             scroll-behavior: smooth;
@@ -40,7 +51,7 @@
         
         .hover-lift:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 25px rgba(57, 88, 134, 0.15);
         }
 
         /* Cart counter animation */
@@ -54,6 +65,23 @@
             70% { transform: scale(0.9) rotate(-2deg); }
             100% { transform: scale(1) rotate(0deg); opacity: 1; }
         }
+
+        /* Custom color classes */
+        .bg-primary { background-color: var(--color-primary); }
+        .bg-secondary { background-color: var(--color-secondary); }
+        .bg-hover { background-color: var(--color-hover); }
+        .bg-mobile { background-color: var(--color-mobile-bg); }
+        .bg-footer { background-color: var(--color-footer); }
+        
+        .text-primary { color: var(--color-primary); }
+        .text-secondary { color: var(--color-secondary); }
+        
+        .border-custom { border-color: var(--color-border); }
+        
+        .hover\:bg-secondary:hover { background-color: var(--color-secondary); }
+        .hover\:bg-hover:hover { background-color: var(--color-hover); }
+        .hover\:bg-hover-btn:hover { background-color: var(--color-hover-btn); }
+        .hover\:text-secondary:hover { color: var(--color-secondary); }
     </style>
     
     @stack('styles')
@@ -61,16 +89,18 @@
 <body class="bg-gray-100 min-h-screen flex flex-col">
 
     <!-- Header / Navigation -->
-    <header class="bg-gray-900 text-white shadow-lg sticky top-0 z-50">
+    <header class="bg-primary text-white shadow-lg sticky top-0 z-50">
         <div class="container mx-auto px-4 sm:px-6">
             <div class="flex justify-between items-center py-4">
                 
-                <!-- Logo -->
+                <!-- Logo - BULAT -->
                 <div class="flex items-center space-x-3">
                     <a href="{{ route('home') }}" class="flex items-center space-x-3 hover:opacity-80 transition">
-                        <svg class="w-8 h-8 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 0L24 22H0z"/>
-                        </svg>
+                        <div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center shadow-md">
+                            <svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+                            </svg>
+                        </div>
                         <span class="font-bold text-xl">{{ config('app.name', 'SewaKonser') }}</span>
                     </a>
                 </div>
@@ -78,19 +108,19 @@
                 <!-- Desktop Navigation -->
                 <nav class="hidden lg:flex space-x-8 items-center">
                     <a href="{{ route('home') }}" 
-                       class="hover:text-yellow-500 transition {{ request()->routeIs('home') ? 'text-yellow-500' : '' }}">
+                       class="hover:text-secondary transition {{ request()->routeIs('home') ? 'text-secondary' : '' }}">
                         Home
                     </a>
                     
                     <a href="{{ route('tentangKami') }}" 
-                       class="hover:text-yellow-500 transition {{ request()->routeIs('tentangKami') ? 'text-yellow-500' : '' }}">
+                       class="hover:text-secondary transition {{ request()->routeIs('tentangKami') ? 'text-secondary' : '' }}">
                         Tentang Kami
                     </a>
                     
                     <!-- Dropdown Kategori -->
                     <div x-data="{ open: false }" class="relative">
                         <button @click="open = !open" 
-                                class="flex items-center hover:text-yellow-500 transition focus:outline-none">
+                                class="flex items-center hover:text-secondary transition focus:outline-none">
                             Kategori
                             <svg class="w-4 h-4 ml-1 transition-transform" 
                                  :class="open ? 'rotate-180' : ''" 
@@ -108,20 +138,20 @@
                              x-transition:leave-end="transform opacity-0 scale-95"
                              class="absolute left-0 mt-2 w-48 bg-white text-gray-900 rounded-lg shadow-lg py-2 z-50">
                             
-                            <a href="/lightstick" class="block px-4 py-2 hover:bg-yellow-50 hover:text-yellow-600">
+                            <a href="/lightstick" class="block px-4 py-2 hover:bg-hover hover:text-primary transition">
                                 🎤 Lightstick
                             </a>
-                            <a href="/powerbank" class="block px-4 py-2 hover:bg-yellow-50 hover:text-yellow-600">
+                            <a href="/powerbank" class="block px-4 py-2 hover:bg-hover hover:text-primary transition">
                                 🔋 Powerbank
                             </a>
-                            <a href="/handphone" class="block px-4 py-2 hover:bg-yellow-50 hover:text-yellow-600">
+                            <a href="/handphone" class="block px-4 py-2 hover:bg-hover hover:text-primary transition">
                                 📱 Handphone
                             </a>
                         </div>
                     </div>
                     
                     <a href="{{ route('hubungi') }}" 
-                       class="hover:text-yellow-500 transition {{ request()->routeIs('hubungi') ? 'text-yellow-500' : '' }}">
+                       class="hover:text-secondary transition {{ request()->routeIs('hubungi') ? 'text-secondary' : '' }}">
                         Hubungi Kami
                     </a>
                 </nav>
@@ -136,9 +166,9 @@
                                    name="search" 
                                    placeholder="Cari produk..." 
                                    value="{{ request('search') }}"
-                                   class="w-64 px-4 py-2 pl-4 pr-10 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                                   class="w-64 px-4 py-2 pl-4 pr-10 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-secondary border border-transparent">
                             <button type="submit" class="absolute right-2 top-1/2 transform -translate-y-1/2">
-                                <svg class="w-5 h-5 text-gray-500 hover:text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-gray-500 hover:text-primary transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z"></path>
                                 </svg>
                             </button>
@@ -148,19 +178,19 @@
                     @guest
                         <!-- Login & Register -->
                         <a href="{{ route('signIn') }}" 
-                           class="px-4 py-2 hover:text-yellow-500 transition">
+                           class="px-4 py-2 hover:text-secondary transition">
                             Masuk
                         </a>
                         
                         <a href="{{ route('create-account') }}" 
-                           class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-gray-900 rounded-lg font-medium transition">
+                           class="px-4 py-2 bg-secondary hover:bg-hover-btn text-primary rounded-lg font-medium transition">
                             Daftar
                         </a>
                     @else
                         <!-- User Menu -->
                         <div x-data="{ open: false }" class="relative">
                             <button @click="open = !open" 
-                                    class="flex items-center space-x-2 hover:text-yellow-500 transition focus:outline-none">
+                                    class="flex items-center space-x-2 hover:text-secondary transition focus:outline-none">
                                 <span>{{ Auth::user()->name }}</span>
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -170,12 +200,12 @@
                             <div x-show="open" @click.away="open = false"
                                  x-transition
                                  class="absolute right-0 mt-2 w-48 bg-white text-gray-900 rounded-lg shadow-lg py-2 z-50">
-                                <a href="{{ route('profile.index') }}" class="block px-4 py-2 hover:bg-gray-100">Profil</a>
-                                <a href="{{ route('profile.orders') }}" class="block px-4 py-2 hover:bg-gray-100">Pesanan Saya</a>
-                                <div class="border-t border-gray-200"></div>
+                                <a href="{{ route('profile.index') }}" class="block px-4 py-2 hover:bg-hover hover:text-primary transition">Profil</a>
+                                <a href="{{ route('profile.orders') }}" class="block px-4 py-2 hover:bg-hover hover:text-primary transition">Pesanan Saya</a>
+                                <div class="border-t border-custom"></div>
                                 <form action="{{ route('logout') }}" method="POST">
                                     @csrf
-                                    <button type="submit" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600">
+                                    <button type="submit" class="w-full text-left px-4 py-2 hover:bg-hover text-red-600 transition">
                                         Logout
                                     </button>
                                 </form>
@@ -183,8 +213,8 @@
                         </div>
                     @endguest
 
-                    <!-- Shopping Cart - FIXED: Langsung ke checkout -->
-                    <a href="{{ route('checkout.index') }}" class="relative hover:text-yellow-500 transition">
+                    <!-- Shopping Cart -->
+                    <a href="{{ route('checkout.index') }}" class="relative hover:text-secondary transition">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                 d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.195.195-.195.512 0 .707L7 18h12M9 19a2 2 0 100 4 2 2 0 000-4zM20 19a2 2 0 100 4 2 2 0 000-4z">
@@ -208,7 +238,7 @@
                 <!-- Mobile Menu Button -->
                 <div class="lg:hidden">
                     <button x-data @click="$dispatch('toggle-mobile-menu')" 
-                            class="text-white hover:text-yellow-500 transition p-2">
+                            class="text-white hover:text-secondary transition p-2">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
@@ -221,32 +251,32 @@
                  @toggle-mobile-menu.window="mobileMenuOpen = !mobileMenuOpen"
                  x-show="mobileMenuOpen" 
                  x-transition
-                 class="lg:hidden bg-gray-800 pb-4">
+                 class="lg:hidden bg-mobile pb-4">
                 <nav class="space-y-2">
-                    <a href="{{ route('home') }}" class="block px-4 py-2 hover:bg-gray-700 hover:text-yellow-500 transition">Home</a>
-                    <a href="{{ route('tentangKami') }}" class="block px-4 py-2 hover:bg-gray-700 hover:text-yellow-500 transition">Tentang Kami</a>
-                    <a href="/lightstick" class="block px-4 py-2 hover:bg-gray-700 hover:text-yellow-500 transition">🎤 Lightstick</a>
-                    <a href="/powerbank" class="block px-4 py-2 hover:bg-gray-700 hover:text-yellow-500 transition">🔋 Powerbank</a>
-                    <a href="/handphone" class="block px-4 py-2 hover:bg-gray-700 hover:text-yellow-500 transition">📱 Handphone</a>
-                    <a href="{{ route('hubungi') }}" class="block px-4 py-2 hover:bg-gray-700 hover:text-yellow-500 transition">Hubungi Kami</a>
+                    <a href="{{ route('home') }}" class="block px-4 py-2 hover:bg-primary hover:text-secondary transition">Home</a>
+                    <a href="{{ route('tentangKami') }}" class="block px-4 py-2 hover:bg-primary hover:text-secondary transition">Tentang Kami</a>
+                    <a href="/lightstick" class="block px-4 py-2 hover:bg-primary hover:text-secondary transition">🎤 Lightstick</a>
+                    <a href="/powerbank" class="block px-4 py-2 hover:bg-primary hover:text-secondary transition">🔋 Powerbank</a>
+                    <a href="/handphone" class="block px-4 py-2 hover:bg-primary hover:text-secondary transition">📱 Handphone</a>
+                    <a href="{{ route('hubungi') }}" class="block px-4 py-2 hover:bg-primary hover:text-secondary transition">Hubungi Kami</a>
                     
-                    <div class="border-t border-gray-700 pt-2">
+                    <div class="border-t border-custom pt-2">
                         @guest
-                            <a href="{{ route('signIn') }}" class="block px-4 py-2 hover:bg-gray-700 hover:text-yellow-500 transition">Masuk</a>
-                            <a href="{{ route('create-account') }}" class="block px-4 py-2 hover:bg-gray-700 hover:text-yellow-500 transition">Daftar</a>
+                            <a href="{{ route('signIn') }}" class="block px-4 py-2 hover:bg-primary hover:text-secondary transition">Masuk</a>
+                            <a href="{{ route('create-account') }}" class="block px-4 py-2 hover:bg-primary hover:text-secondary transition">Daftar</a>
                         @else
-                            <a href="{{ route('profile.index') }}" class="block px-4 py-2 hover:bg-gray-700 hover:text-yellow-500 transition">Profile</a>
-                            <a href="{{ route('profile.orders') }}" class="block px-4 py-2 hover:bg-gray-700 hover:text-yellow-500 transition">Pesanan</a>
+                            <a href="{{ route('profile.index') }}" class="block px-4 py-2 hover:bg-primary hover:text-secondary transition">Profile</a>
+                            <a href="{{ route('profile.orders') }}" class="block px-4 py-2 hover:bg-primary hover:text-secondary transition">Pesanan</a>
                             <form action="{{ route('logout') }}" method="POST">
                                 @csrf
-                                <button type="submit" class="w-full text-left px-4 py-2 hover:bg-gray-700 text-red-400 transition">Logout</button>
+                                <button type="submit" class="w-full text-left px-4 py-2 hover:bg-primary text-red-400 transition">Logout</button>
                             </form>
                         @endguest
                     </div>
                     
-                    <!-- Mobile Cart - FIXED: Langsung ke checkout -->
-                    <div class="border-t border-gray-700 pt-2">
-                        <a href="{{ route('checkout.index') }}" class="flex items-center px-4 py-2 hover:bg-gray-700 hover:text-yellow-500 transition">
+                    <!-- Mobile Cart -->
+                    <div class="border-t border-custom pt-2">
+                        <a href="{{ route('checkout.index') }}" class="flex items-center px-4 py-2 hover:bg-primary hover:text-secondary transition">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.195.195-.195.512 0 .707L7 18h12M9 19a2 2 0 100 4 2 2 0 000-4zM20 19a2 2 0 100 4 2 2 0 000-4z"></path>
                             </svg>
@@ -276,7 +306,7 @@
         <div class="container mx-auto px-4 sm:px-6 py-3">
             <ol class="flex items-center space-x-2 text-sm">
                 <li>
-                    <a href="{{ route('home') }}" class="text-gray-500 hover:text-gray-700">Home</a>
+                    <a href="{{ route('home') }}" class="text-gray-500 hover:text-primary transition">Home</a>
                 </li>
                 @yield('breadcrumbs')
             </ol>
@@ -290,16 +320,18 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-white mt-auto">
+    <footer class="bg-footer text-white mt-auto">
         <div class="container mx-auto px-4 sm:px-6 py-12">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 
                 <!-- Company Info -->
                 <div class="space-y-4">
-                    <div class="flex items-center space-x-2">
-                        <svg class="w-8 h-8 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 0L24 22H0z"/>
-                        </svg>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center shadow-md">
+                            <svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+                            </svg>
+                        </div>
                         <span class="font-bold text-xl">{{ config('app.name', 'SewaKonser') }}</span>
                     </div>
                     <p class="text-gray-400">
@@ -311,10 +343,10 @@
                 <div class="space-y-4">
                     <h3 class="font-semibold text-lg">Link Cepat</h3>
                     <ul class="space-y-2 text-gray-400">
-                        <li><a href="{{ route('tentangKami') }}" class="hover:text-white transition">Tentang Kami</a></li>
-                        <li><a href="{{ route('shop') }}" class="hover:text-white transition">Semua Produk</a></li>
-                        <li><a href="{{ route('hubungi') }}" class="hover:text-white transition">Hubungi Kami</a></li>
-                        <li><a href="{{ route('termsAndConditions') }}" class="hover:text-white transition">Syarat & Ketentuan</a></li>
+                        <li><a href="{{ route('tentangKami') }}" class="hover:text-secondary transition">Tentang Kami</a></li>
+                        <li><a href="{{ route('shop') }}" class="hover:text-secondary transition">Semua Produk</a></li>
+                        <li><a href="{{ route('hubungi') }}" class="hover:text-secondary transition">Hubungi Kami</a></li>
+                        <li><a href="{{ route('termsAndConditions') }}" class="hover:text-secondary transition">Syarat & Ketentuan</a></li>
                     </ul>
                 </div>
 
@@ -322,9 +354,9 @@
                 <div class="space-y-4">
                     <h3 class="font-semibold text-lg">Kategori</h3>
                     <ul class="space-y-2 text-gray-400">
-                        <li><a href="/handphone" class="hover:text-white transition">📱 Handphone</a></li>
-                        <li><a href="/powerbank" class="hover:text-white transition">🔋 Powerbank</a></li>
-                        <li><a href="/lightstick" class="hover:text-white transition">🎤 Lightstick</a></li>
+                        <li><a href="/handphone" class="hover:text-secondary transition">📱 Handphone</a></li>
+                        <li><a href="/powerbank" class="hover:text-secondary transition">🔋 Powerbank</a></li>
+                        <li><a href="/lightstick" class="hover:text-secondary transition">🎤 Lightstick</a></li>
                     </ul>
                 </div>
 
@@ -356,7 +388,7 @@
             </div>
 
             <!-- Copyright -->
-            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+            <div class="border-t border-custom mt-8 pt-8 text-center text-gray-400">
                 <p>&copy; {{ date('Y') }} {{ config('app.name', 'SewaKonser') }}. Semua hak dilindungi.</p>
             </div>
         </div>
@@ -368,7 +400,7 @@
              x-show="show" 
              x-transition
              x-init="setTimeout(() => show = false, 5000)"
-             class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 max-w-sm">
+             class="fixed bottom-4 right-4 bg-primary text-white px-6 py-4 rounded-lg shadow-lg z-50 max-w-sm">
             <div class="flex items-center space-x-2">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -418,7 +450,6 @@
                 if (cartCounter) {
                     cartCounter.classList.remove('hidden');
                     cartCount.textContent = count;
-                    // Add bounce animation
                     cartCounter.classList.remove('cart-counter');
                     void cartCounter.offsetWidth;
                     cartCounter.classList.add('cart-counter');
@@ -442,9 +473,8 @@
             }
 
             const notification = document.createElement('div');
-            notification.className = `notification-toast fixed bottom-4 right-4 px-6 py-4 rounded-lg shadow-lg z-50 max-w-sm transition-all duration-300 transform translate-x-full ${
-                type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-            }`;
+            const bgColor = type === 'success' ? 'bg-primary' : 'bg-red-500';
+            notification.className = `notification-toast fixed bottom-4 right-4 px-6 py-4 rounded-lg shadow-lg z-50 max-w-sm transition-all duration-300 transform translate-x-full ${bgColor} text-white`;
             notification.innerHTML = `
                 <div class="flex items-center space-x-2">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -503,28 +533,25 @@
                 return response.json();
             })
             .then(data => {
-                console.log('Add to cart response:', data); // Debug
+                console.log('Add to cart response:', data);
                 
                 if (data.success) {
-                    // PENTING: Update cart counter dengan cart_count dari response
                     updateCartCounter(data.cart_count || 0);
                     
-                    // Show success message
                     let successText = '✓ Ditambahkan!';
                     if (data.product_quantity && data.product_quantity > 1) {
                         successText = `✓ Qty: ${data.product_quantity}`;
                     }
                     
                     button.innerHTML = successText;
-                    button.className = button.className.replace('bg-blue-600', 'bg-green-600').replace('hover:bg-blue-700', 'hover:bg-green-700');
+                    button.className = button.className.replace('bg-primary', 'bg-secondary').replace('hover:bg-secondary', 'hover:bg-hover-btn');
                     
                     showNotification(data.message || 'Produk berhasil ditambahkan ke keranjang!', 'success');
                     
-                    // Reset button after 3 seconds
                     setTimeout(() => {
                         button.innerHTML = originalText;
                         button.disabled = false;
-                        button.className = button.className.replace('bg-green-600', 'bg-blue-600').replace('hover:bg-green-700', 'hover:bg-blue-700');
+                        button.className = button.className.replace('bg-secondary', 'bg-primary').replace('hover:bg-hover-btn', 'hover:bg-secondary');
                         button.classList.remove('opacity-75', 'cursor-not-allowed');
                     }, 3000);
                 } else {
@@ -535,7 +562,6 @@
                 console.error('Error:', error);
                 showNotification(error.message || 'Terjadi kesalahan. Silakan coba lagi.', 'error');
                 
-                // Reset button
                 button.innerHTML = originalText;
                 button.disabled = false;
                 button.classList.remove('opacity-75', 'cursor-not-allowed');

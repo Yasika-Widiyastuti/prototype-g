@@ -4,7 +4,7 @@
 
 @section('content')
 <!-- Background with gradient matching login -->
-<div class="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-orange-50">
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
     <div class="py-8 lg:py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-lg mx-auto">
             
@@ -12,9 +12,9 @@
             <div class="text-center mb-6 lg:mb-8 loading">
                 <div class="relative mb-4 lg:mb-6">
                     <!-- Background decoration -->
-                    <div class="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 w-16 h-16 lg:w-20 lg:h-20 rounded-full mx-auto blur-lg opacity-30"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-400 w-16 h-16 lg:w-20 lg:h-20 rounded-full mx-auto blur-lg opacity-30"></div>
                     <!-- Icon container -->
-                    <div class="relative bg-gradient-to-r from-yellow-500 to-orange-500 w-16 h-16 lg:w-20 lg:h-20 rounded-2xl flex items-center justify-center mx-auto shadow-lg transform hover:scale-105 transition duration-300">
+                    <div class="relative bg-gradient-to-r from-blue-500 to-blue-500 w-16 h-16 lg:w-20 lg:h-20 rounded-2xl flex items-center justify-center mx-auto shadow-lg transform hover:scale-105 transition duration-300">
                         <svg class="w-8 h-8 lg:w-10 lg:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-9a2 2 0 00-2-2H6a2 2 0 00-2 2v9a2 2 0 002 2zm10-12V9a4 4 0 00-8 0v4h8z"></path>
                         </svg>
@@ -46,10 +46,10 @@
                                    name="email" 
                                    value="{{ $email ?? old('email') }}" 
                                    required
-                                   class="w-full pl-11 lg:pl-12 pr-4 py-3 lg:py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-yellow-500/20 focus:border-yellow-500 transition duration-300 bg-gray-50/50 group-hover:bg-white text-sm lg:text-base @error('email') border-red-400 focus:border-red-400 focus:ring-red-500/20 @enderror" 
+                                   class="w-full pl-11 lg:pl-12 pr-4 py-3 lg:py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition duration-300 bg-gray-50/50 group-hover:bg-white text-sm lg:text-base @error('email') border-red-400 focus:border-red-400 focus:ring-red-500/20 @enderror" 
                                    placeholder="contoh@email.com">
                             <div class="absolute inset-y-0 left-0 pl-3 lg:pl-4 flex items-center pointer-events-none">
-                                <svg class="h-5 w-5 text-gray-400 group-hover:text-yellow-500 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="h-5 w-5 text-gray-400 group-hover:text-blue-500 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
                                 </svg>
                             </div>
@@ -74,22 +74,22 @@
                                    id="password" 
                                    name="password" 
                                    required 
-                                   class="w-full pl-11 lg:pl-12 pr-11 lg:pr-12 py-3 lg:py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-yellow-500/20 focus:border-yellow-500 transition duration-300 bg-gray-50/50 group-hover:bg-white text-sm lg:text-base @error('password') border-red-400 focus:border-red-400 focus:ring-red-500/20 @enderror" 
+                                   class="w-full pl-11 lg:pl-12 pr-11 lg:pr-12 py-3 lg:py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition duration-300 bg-gray-50/50 group-hover:bg-white text-sm lg:text-base @error('password') border-red-400 focus:border-red-400 focus:ring-red-500/20 @enderror" 
                                    placeholder="Buat password baru yang kuat"
                                    x-on:input="validatePassword($event.target.value)">
                             <div class="absolute inset-y-0 left-0 pl-3 lg:pl-4 flex items-center pointer-events-none">
-                                <svg class="h-5 w-5 text-gray-400 group-hover:text-yellow-500 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="h-5 w-5 text-gray-400 group-hover:text-blue-500 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-9a2 2 0 00-2-2H6a2 2 0 00-2 2v9a2 2 0 002 2zm10-12V9a4 4 0 00-8 0v4h8z"></path>
                                 </svg>
                             </div>
                             <button type="button" 
                                     @click="showPassword = !showPassword"
                                     class="absolute inset-y-0 right-0 pr-3 lg:pr-4 flex items-center hover:bg-gray-100 rounded-r-xl transition duration-300">
-                                <svg x-show="!showPassword" class="h-5 w-5 text-gray-400 hover:text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg x-show="!showPassword" class="h-5 w-5 text-gray-400 hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                 </svg>
-                                <svg x-show="showPassword" class="h-5 w-5 text-gray-400 hover:text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg x-show="showPassword" class="h-5 w-5 text-gray-400 hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
                                 </svg>
                             </button>
@@ -125,22 +125,22 @@
                                    id="password_confirmation" 
                                    name="password_confirmation" 
                                    required 
-                                   class="w-full pl-11 lg:pl-12 pr-11 lg:pr-12 py-3 lg:py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-yellow-500/20 focus:border-yellow-500 transition duration-300 bg-gray-50/50 group-hover:bg-white text-sm lg:text-base" 
+                                   class="w-full pl-11 lg:pl-12 pr-11 lg:pr-12 py-3 lg:py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition duration-300 bg-gray-50/50 group-hover:bg-white text-sm lg:text-base" 
                                    placeholder="Ulangi password baru"
                                    x-on:input="validatePasswordMatch()">
                             <div class="absolute inset-y-0 left-0 pl-3 lg:pl-4 flex items-center pointer-events-none">
-                                <svg class="h-5 w-5 text-gray-400 group-hover:text-yellow-500 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="h-5 w-5 text-gray-400 group-hover:text-blue-500 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5-4v12a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h2m8 0V6a2 2 0 012-2h2a2 2 0 012 2v2m0 0v12a2 2 0 01-2 2h-2m-8 0H6a2 2 0 01-2-2v-2"></path>
                                 </svg>
                             </div>
                             <button type="button" 
                                     @click="showConfirmPassword = !showConfirmPassword"
                                     class="absolute inset-y-0 right-0 pr-3 lg:pr-4 flex items-center hover:bg-gray-100 rounded-r-xl transition duration-300">
-                                <svg x-show="!showConfirmPassword" class="h-5 w-5 text-gray-400 hover:text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg x-show="!showConfirmPassword" class="h-5 w-5 text-gray-400 hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                 </svg>
-                                <svg x-show="showConfirmPassword" class="h-5 w-5 text-gray-400 hover:text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg x-show="showConfirmPassword" class="h-5 w-5 text-gray-400 hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
                                 </svg>
                             </button>
@@ -149,14 +149,14 @@
                     </div>
 
                     <!-- Password Requirements Info (Dynamic) -->
-                    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
                         <div class="flex items-start">
-                            <svg class="w-5 h-5 text-yellow-600 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                             <div class="flex-1">
-                                <h4 class="text-sm font-semibold text-yellow-800 mb-2">Persyaratan Password (Wajib):</h4>
-                                <ul class="text-xs lg:text-sm text-yellow-700 space-y-1" id="passwordRequirements">
+                                <h4 class="text-sm font-semibold text-blue-800 mb-2">Persyaratan Password (Wajib):</h4>
+                                <ul class="text-xs lg:text-sm text-blue-700 space-y-1" id="passwordRequirements">
                                     <li id="req-length" class="flex items-center">
                                         <span class="req-icon mr-2">○</span>
                                         <span>Minimal 8 karakter</span>
@@ -186,7 +186,7 @@
                     <button type="submit" 
                             id="submitBtn"
                             disabled
-                            class="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-3 lg:py-4 px-6 rounded-xl transition duration-300 transform hover:scale-[1.02] hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-yellow-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm lg:text-base">
+                            class="w-full bg-gradient-to-r from-blue-500 to-blue-500 hover:from-blue-600 hover:to-blue-600 text-white font-bold py-3 lg:py-4 px-6 rounded-xl transition duration-300 transform hover:scale-[1.02] hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm lg:text-base">
                         <span class="flex items-center justify-center">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -208,7 +208,7 @@
                     <!-- Back to Login Link - Fixed Alignment -->
                     <div class="text-center">
                         <a href="{{ route('signIn') }}" 
-                           class="inline-flex items-center justify-center text-sm font-semibold text-yellow-600 hover:text-yellow-700 hover:underline transition duration-300">
+                           class="inline-flex items-center justify-center text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline transition duration-300">
                             <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                             </svg>
@@ -219,10 +219,10 @@
             </div>
 
             <!-- Security Notice -->
-            <div class="mt-6 lg:mt-8 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200/50 rounded-2xl p-4 lg:p-6 loading">
+            <div class="mt-6 lg:mt-8 bg-gradient-to-r from-blue-50 to-blue-50 border-2 border-blue-200/50 rounded-2xl p-4 lg:p-6 loading">
                 <div class="flex items-start">
                     <div class="flex-shrink-0">
-                        <svg class="w-5 h-5 lg:w-6 lg:h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 lg:w-6 lg:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-9a2 2 0 00-2-2H6a2 2 0 00-2 2v9a2 2 0 002 2zm10-12V9a4 4 0 00-8 0v4h8z"></path>
                         </svg>
                     </div>
@@ -335,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const strengthColors = [
             'text-red-600',
             'text-orange-600',
-            'text-yellow-600',
+            'text-blue-600',
             'text-green-600',
             'text-green-700'
         ];
@@ -370,7 +370,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Update strength bars
     function updateStrengthBars(count) {
-        const colors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500', 'bg-green-600'];
+        const colors = ['bg-blue-500', 'bg-blue-500', 'bg-blue-500', 'bg-blue-500', 'bg-blue-600'];
         
         for (let i = 1; i <= 4; i++) {
             const bar = document.getElementById('strength-bar-' + i);

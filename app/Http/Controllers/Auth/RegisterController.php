@@ -34,19 +34,29 @@ class RegisterController extends Controller
             'password.min' => 'Password minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak sama.',
             'ktp.required' => 'KTP harus diupload.',
+            'ktp.mimes' => 'Format KTP harus JPG, PNG, atau PDF.',
+            'ktp.max' => 'Ukuran KTP maksimal 5MB.',
             'kk.required' => 'KK harus diupload.',
+            'kk.mimes' => 'Format KK harus JPG, PNG, atau PDF.',
+            'kk.max' => 'Ukuran KK maksimal 5MB.',
             'agree.required' => 'Anda harus menyetujui syarat dan ketentuan.',
         ]);
 
         $ktpPath = null;
         $kkPath = null;
 
+        // ✅ Upload KTP dengan nama unik
         if ($request->hasFile('ktp')) {
-            $ktpPath = $request->file('ktp')->store('public/documents');
+            $ktpFile = $request->file('ktp');
+            $ktpName = 'ktp_' . time() . '_' . uniqid() . '.' . $ktpFile->getClientOriginalExtension();
+            $ktpPath = $ktpFile->storeAs('documents/ktp', $ktpName, 'public');
         }
 
+        // ✅ Upload KK dengan nama unik
         if ($request->hasFile('kk')) {
-            $kkPath = $request->file('kk')->store('public/documents');
+            $kkFile = $request->file('kk');
+            $kkName = 'kk_' . time() . '_' . uniqid() . '.' . $kkFile->getClientOriginalExtension();
+            $kkPath = $kkFile->storeAs('documents/kk', $kkName, 'public');
         }
 
         User::create([
@@ -58,17 +68,20 @@ class RegisterController extends Controller
             'ktp_path' => $ktpPath,
             'kk_path' => $kkPath,
             'email_verified_at' => now(),
-            'role' => 'customer', // ✅ tambahkan ini
-            'is_active' => true, // opsional, kalau mau akun aktif langsung
+            'role' => 'customer',
+            'is_active' => true,
+            'verification_status' => 'pending',
         ]);
 
-        return redirect()->route('signIn')->with('success', 'Akun berhasil dibuat! Silakan login.');
+        return redirect()->route('signIn')->with('success', 'Akun berhasil dibuat! Silakan login dan tunggu verifikasi dari admin.');
     }
-    public function editProfile()
+
+    public function edit()
     {
         $user = auth()->user();
         return view('profile.edit', compact('user'));
     }
+
     public function updateProfile(Request $request)
     {
         $user = auth()->user();
@@ -90,5 +103,4 @@ class RegisterController extends Controller
 
         return redirect()->route('profile.edit')->with('success', 'Profil berhasil diperbarui.');
     }
-
 }
