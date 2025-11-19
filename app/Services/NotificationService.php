@@ -36,7 +36,7 @@ class NotificationService
         }
     }
 
-    public function notifyAccountStatusChange(User $user, $isActive)
+    public function sendAccountStatusChange(User $user, $isActive)
     {
         try {
             $status = $isActive ? 'activated' : 'deactivated';

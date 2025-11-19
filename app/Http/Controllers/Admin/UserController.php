@@ -125,7 +125,7 @@ class UserController extends Controller
         );
 
         // Kirim notifikasi status akun
-        $this->notificationService->sendAccountStatusChange($user, $user->is_active);
+        //$this->notificationService->sendAccountStatusChange($user, $user->is_active);
 
         $status = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
         
