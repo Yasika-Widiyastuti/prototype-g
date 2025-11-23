@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->string('bank');
             $table->string('bukti_transfer');
+            $table->decimal('amount', 10, 2)->nullable();
             $table->enum('status', ['waiting', 'success', 'failed']);
             $table->timestamps();
 

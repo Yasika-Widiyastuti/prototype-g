@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('payment_proof')->nullable();
             $table->timestamp('payment_verified_at')->nullable();
             $table->date('rental_date');
+            $table->dateTime('return_date')->nullable();
             $table->integer('rental_days')->default(1);
             $table->text('notes')->nullable();
             $table->timestamps();
