@@ -16,6 +16,16 @@ use App\Http\Controllers\Admin\AdminAuditController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileOrderController;
+use App\Http\Controllers\OwnerDashboardController;
+use App\Http\Controllers\UserController;
+use App\Http\Middleware\EnsureUserIsOwner;
+
+// Jadi ini:
+Route::middleware(['auth', EnsureUserIsOwner::class])->prefix('owner')->group(function () {
+    Route::get('/dashboard', [OwnerDashboardController::class, 'index'])
+        ->name('owner.dashboard');
+});
+
 
 // ==========================
 // AUTH ROUTES (Guest Only)

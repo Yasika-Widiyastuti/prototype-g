@@ -14,6 +14,10 @@ class LoginController extends Controller
     protected function redirectTo()
     {
         $user = Auth::user();
+        // PERBAIKAN 1: Cek di method redirectTo juga
+        if ($user->role === 'owner') {
+            return route('owner.dashboard');
+        }
         return $user->isAdmin() ? route('admin.dashboard') : route('home');
     }
 
@@ -98,6 +102,11 @@ class LoginController extends Controller
             // Redirect sesuai role
             if ($user->isAdmin()) {
                 return redirect()->intended(route('admin.dashboard'));
+            }
+
+            // 2. Cek Owner (INI YANG BARU DITAMBAHKAN) ✅
+            if ($user->role === 'owner') {
+                return redirect()->intended(route('owner.dashboard'));
             }
 
             if ($user->isCustomer()) {
