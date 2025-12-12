@@ -18,7 +18,7 @@ class OrderFactory extends Factory
             'rental_date' => $this->faker->dateTime(),
             'status' => $this->faker->randomElement(['pending', 'paid', 'cancelled']),
             'order_number' => 'ORD-' . fake()->unique()->randomNumber(7),
-            'created_at' => now(),
+            'created_at' => $this->faker->dateTimeBetween('2020-01-01', '2029-12-31'),
             'updated_at' => now(),
         ];
     }

@@ -21,7 +21,7 @@ class OrderItemFactory extends Factory
             'subtotal' => function (array $attributes) {
                 return $attributes['quantity'] * $attributes['price'];
             },
-            'created_at' => now(),
+            'created_at' => $this->faker->dateTimeBetween('2020-01-01', '2029-12-31'),
             'updated_at' => now(),
         ];
     }

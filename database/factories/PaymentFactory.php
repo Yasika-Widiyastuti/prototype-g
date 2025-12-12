@@ -28,7 +28,7 @@ class PaymentFactory extends Factory
             'bukti_transfer' => 'uploads/payments/dummy.jpg',
             'amount'         => $this->faker->numberBetween(50000, 500000),
             'status'         => $this->faker->randomElement(['waiting', 'success', 'failed']),
-            'created_at'     => now(),
+            'created_at' => $this->faker->dateTimeBetween('2020-01-01', '2029-12-31'),
             'updated_at'     => now(),
         ];
     }

@@ -17,7 +17,7 @@ class UserFactory extends Factory
             'address' => $this->faker->city(),
             'verification_status' => $this->faker->randomElement(['pending','approved','rejected']),
             'password' => bcrypt('password123'),
-            'created_at' => now(),
+            'created_at' => $this->faker->dateTimeBetween('2020-01-01', '2029-12-31')
         ];
     }
 
