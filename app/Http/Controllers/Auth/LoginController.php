@@ -34,7 +34,12 @@ class LoginController extends Controller
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
             $user = Auth::user();
-
+            
+            // 🚫 Cek apakah akun nonaktif
+            if (!$user->is_active) {
+                Auth::logout();
+                return redirect()->route('signIn')->with('error', 'Akun Anda telah dinonaktifkan.');
+            }
             // =======================================================
             // START LOGIKA PENGGABUNGAN KERANJANG (CART MERGE)
             // =======================================================
