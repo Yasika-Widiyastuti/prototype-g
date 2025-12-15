@@ -44,19 +44,19 @@
     <div class="container mx-auto px-4 sm:px-6">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div class="loading">
-                <div class="text-3xl md:text-4xl font-bold mb-2">6+</div>
+                <div class="text-3xl md:text-4xl font-bold mb-2">10+</div>
                 <div class="text-sm md:text-base font-medium">Konser Dilayani</div>
             </div>
             <div class="loading">
-                <div class="text-3xl md:text-4xl font-bold mb-2">10+</div>
+                <div class="text-3xl md:text-4xl font-bold mb-2">100+</div>
                 <div class="text-sm md:text-base font-medium">Produk Tersedia</div>
             </div>
             <div class="loading">
-                <div class="text-3xl md:text-4xl font-bold mb-2">10+</div>
+                <div class="text-3xl md:text-4xl font-bold mb-2">100+</div>
                 <div class="text-sm md:text-base font-medium">Pelanggan Puas</div>
             </div>
             <div class="loading">
-                <div class="text-3xl md:text-4xl font-bold mb-2">1</div>
+                <div class="text-3xl md:text-4xl font-bold mb-2">10</div>
                 <div class="text-sm md:text-base font-medium">Tahun Pengalaman</div>
             </div>
         </div>

@@ -45,4 +45,3 @@ class ReportController extends Controller
         return view('admin.reports.customers', compact('customers')); // Pastikan view 'admin.reports.customers' ada
     }
 }
-

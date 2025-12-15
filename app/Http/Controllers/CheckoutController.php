@@ -328,7 +328,7 @@ class CheckoutController extends Controller
      */
     public function processPayment(Request $request)
     {
-        $request->validate(['bank' => 'required|in:bca,mandiri,bri']);
+        $request->validate(['bank' => 'required|in:bca,mandiri,bri,bni,qris']);
         session(['selected_bank' => $request->bank, 'payment_method' => $request->bank]);
         return redirect()->route('checkout.confirmation')->with('success', 'Metode pembayaran berhasil dipilih.');
     }
@@ -588,6 +588,16 @@ class CheckoutController extends Controller
             'bri' => [
                 'name'     => 'Bank BRI',
                 'rekening' => '1122334455',
+                'an'       => 'PT Sewa Konser Indonesia',
+            ],
+            'bni' => [
+                'name'     => 'Bank BNI',
+                'rekening' => '0000009999',
+                'an'       => 'PT Sewa Konser Indonesia',
+            ],
+            'qris' => [
+                'name'     => 'QRIS',
+                'rekening' => 'Scan QR Code',
                 'an'       => 'PT Sewa Konser Indonesia',
             ],
   ];

@@ -54,7 +54,7 @@
 
                 <div class="mb-8">
                     <h2 class="text-xl font-bold text-gray-900 mb-6">Metode Pembayaran</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         
                         <label for="bca" class="border border-gray-300 rounded-lg p-6 hover:border-blue-500 cursor-pointer transition block">
                             <div class="flex items-center mb-4">
@@ -89,6 +89,33 @@
                                 <p class="text-sm text-gray-600 mb-2">Nomor Rekening:</p>
                                 <p class="text-lg font-bold text-green-800">1122334455</p>
                                 <p class="text-sm text-gray-600 mt-2">a.n. PT Sewa Konser Indonesia</p>
+                            </div>
+                        </label>
+
+                        <label for="bni" class="border border-gray-300 rounded-lg p-6 hover:border-blue-500 cursor-pointer transition block">
+                            <div class="flex items-center mb-4">
+                                <input type="radio" name="bank" value="bni" id="bni" class="text-blue-600">
+                                <span class="ml-3 text-lg font-medium text-gray-900">Bank BNI</span>
+                            </div>
+                            <div class="bg-indigo-50 p-4 rounded-lg">
+                                <p class="text-sm text-gray-600 mb-2">Nomor Rekening:</p>
+                                <p class="text-lg font-bold text-sky-800">0000009999</p>
+                                <p class="text-sm text-gray-600 mt-2">a.n. PT Sewa Konser Indonesia</p>
+                            </div>
+                        </label>
+
+                        <label for="qris" class="border border-gray-300 rounded-lg p-6 hover:border-blue-500 cursor-pointer transition block">
+                            <div class="flex items-center mb-4">
+                                <input type="radio" name="bank" id="qris" value="qris" class="text-blue-600">
+                                <span class="ml-3 text-lg font-medium text-gray-900">QRIS</span>
+                            </div>
+
+                            <div class="bg-lime-50 p-4 rounded-lg text-center">
+                                <p class="text-sm text-gray-600 mb-3">Scan kode di bawah ini:</p>
+                                
+                                <img src="{{ asset('img/qris.jpeg') }}" alt="QR Code QRIS" class="w-48 h-auto mx-auto border bg-white p-2 rounded shadow-sm">
+                                
+                                <p class="text-sm text-gray-600 mt-3">a.n. PT Sewa Konser Indonesia</p>
                             </div>
                         </label>
                     </div>

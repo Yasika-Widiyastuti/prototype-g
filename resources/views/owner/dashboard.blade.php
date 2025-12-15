@@ -1,899 +1,1066 @@
-@extends('layouts.app') 
+@extends('layouts.app')
 
 @section('content')
 <div class="dashboard-container">
-    {{-- Animated Background --}}
     <div class="dashboard-bg"></div>
     
     <div class="container-fluid px-4 py-4 position-relative">
-        {{-- Enhanced Header --}}
-        <div class="dashboard-header mb-4">
-            <div class="d-flex justify-content-between align-items-center">
+        {{-- HEADER --}}
+        <div class="dashboard-header mb-5">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
                 <div>
                     <h1 class="dashboard-title mb-2">
-                        <span class="gradient-text">Dashboard</span>
+                        <span class="gradient-text">Dashboard Analytics</span>
                     </h1>
-                    <p class="dashboard-subtitle mb-0">
-                        <i class="fas fa-chart-line me-2"></i>
-                        Executive Summary & Business Intelligence
-                    </p>
                 </div>
-                <div class="status-badge">
-                    <div class="pulse-dot"></div>
-                    <span class="ms-2"><i class="fas fa-database me-1"></i> Data Warehouse</span>
+
+                {{-- DATE CONTROLS --}}
+                <div class="date-controls-wrapper">
+                    <div class="quick-select mb-2">
+                        <button class="quick-btn" onclick="setQuickRange('today')">Hari Ini</button>
+                        <button class="quick-btn" onclick="setQuickRange('week')">Minggu Ini</button>
+                        <button class="quick-btn" onclick="setQuickRange('month')">Bulan Ini</button>
+                        <button class="quick-btn" onclick="setQuickRange('quarter')">Quarter Ini</button>
+                        <button class="quick-btn" onclick="setQuickRange('year')">Tahun Ini</button>
+                        <button class="quick-btn" onclick="setQuickRange('all')">Semua</button>
+                    </div>
+                    <input type="text" id="dateRangePicker" class="date-range-input" placeholder="Pilih Tanggal" readonly>
                 </div>
+            </div>
+
+            <div class="period-info mt-3">
+                <i class="fas fa-info-circle me-2"></i>
+                <span>Menampilkan data: <strong>{{ $periodLabel }}</strong> ({{ $periodDays }} hari)</span>
             </div>
         </div>
 
-        {{-- Enhanced KPI Cards --}}
+        {{-- ROW 1: KPI CARDS --}}
         <div class="row g-4 mb-4">
-            {{-- KPI 1: Total Pendapatan --}}
             <div class="col-xl-3 col-md-6">
-                <div class="kpi-card kpi-primary">
-                    <div class="kpi-icon">
-                        <i class="fas fa-money-bill-wave"></i>
-                    </div>
+                <div class="kpi-card kpi-primary h-100">
+                    <div class="kpi-icon"><i class="fas fa-money-bill-wave"></i></div>
                     <div class="kpi-content">
                         <p class="kpi-label">Total Pendapatan</p>
                         <h3 class="kpi-value">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</h3>
-                    </div>
-                    <div class="kpi-chart-mini">
-                        <canvas id="miniChart1"></canvas>
+                        <div class="kpi-sparkle"></div>
                     </div>
                 </div>
             </div>
 
-            {{-- KPI 2: Order Selesai --}}
             <div class="col-xl-3 col-md-6">
-                <div class="kpi-card kpi-success">
-                    <div class="kpi-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
+                <div class="kpi-card kpi-success h-100">
+                    <div class="kpi-icon"><i class="fas fa-check-circle"></i></div>
                     <div class="kpi-content">
                         <p class="kpi-label">Order Selesai</p>
                         <h3 class="kpi-value">{{ number_format($completedOrders) }}</h3>
-                    </div>
-                    <div class="kpi-chart-mini">
-                        <canvas id="miniChart2"></canvas>
+                        <div class="kpi-sparkle"></div>
                     </div>
                 </div>
             </div>
 
-            {{-- KPI 3: Customer Aktif --}}
             <div class="col-xl-3 col-md-6">
-                <div class="kpi-card kpi-info">
-                    <div class="kpi-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
+                <div class="kpi-card kpi-info h-100">
+                    <div class="kpi-icon"><i class="fas fa-users"></i></div>
                     <div class="kpi-content">
                         <p class="kpi-label">Customer Aktif</p>
                         <h3 class="kpi-value">{{ number_format($activeCustomers) }}</h3>
-                    </div>
-                    <div class="kpi-chart-mini">
-                        <canvas id="miniChart3"></canvas>
+                        <div class="kpi-sparkle"></div>
                     </div>
                 </div>
             </div>
 
-            {{-- KPI 4: Rating --}}
             <div class="col-xl-3 col-md-6">
-                <div class="kpi-card kpi-warning">
-                    <div class="kpi-icon">
-                        <i class="fas fa-star"></i>
-                    </div>
+                <div class="kpi-card kpi-warning h-100">
+                    <div class="kpi-icon"><i class="fas fa-star"></i></div>
                     <div class="kpi-content">
                         <p class="kpi-label">Kepuasan Pelanggan</p>
                         <h3 class="kpi-value">{{ number_format($avgRating, 1) }}</h3>
-                    </div>
-                    <div class="rating-stars">
-                        @for($i = 1; $i <= 5; $i++)
-                            <i class="fas fa-star {{ $i <= $avgRating ? 'active' : '' }}"></i>
-                        @endfor
+                        <div class="kpi-sparkle"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Enhanced Charts Row 1 --}}
+        {{-- ROW 2: TREN PENDAPATAN --}}
         <div class="row g-4 mb-4">
-            <div class="col-xl-8">
+            <div class="col-12">
                 <div class="chart-card">
                     <div class="chart-header">
-                        <div>
-                            <h6 class="chart-title">
-                                <i class="fas fa-chart-line me-2"></i>
-                                Tren Pendapatan Bulanan
-                            </h6>
-                            <p class="chart-subtitle">Analisis performa revenue 12 bulan terakhir</p>
-                        </div>
+                        <h5 class="chart-title"><i class="fas fa-chart-line me-2"></i>Tren Pendapatan</h5>
                     </div>
                     <div class="chart-body">
-                        @if($revenueTrend->isNotEmpty())
-                            <div style="height: 350px;">
-                                <canvas id="revenueChart"></canvas>
-                            </div>
-                        @else
-                            <div class="empty-state">
-                                <i class="fas fa-chart-line"></i>
-                                <p>Belum ada data transaksi</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-4">
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <div>
-                            <h6 class="chart-title">
-                                <i class="fas fa-chart-pie me-2"></i>
-                                Status Order
-                            </h6>
-                            <p class="chart-subtitle">Distribusi status pesanan</p>
+                        <div class="chart-container">
+                            <canvas id="revenueTrendChart"></canvas>
                         </div>
-                    </div>
-                    <div class="chart-body">
-                        @if($orderStatusStats->isNotEmpty())
-                            <div style="height: 350px;">
-                                <canvas id="orderStatusChart"></canvas>
-                            </div>
-                        @else
-                            <div class="empty-state">
-                                <i class="fas fa-chart-pie"></i>
-                                <p>Belum ada order</p>
-                            </div>
-                        @endif
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Enhanced Charts Row 2 --}}
+        {{-- ROW 3: TOP PRODUCTS --}}
         <div class="row g-4 mb-4">
-            <div class="col-xl-6">
+            <div class="col-12">
                 <div class="chart-card">
                     <div class="chart-header">
-                        <div>
-                            <h6 class="chart-title">
-                                <i class="fas fa-trophy me-2"></i>
-                                Top 5 Produk Terlaris
-                            </h6>
-                            <p class="chart-subtitle">Produk dengan penjualan tertinggi</p>
-                        </div>
+                        <h5 class="chart-title"><i class="fas fa-trophy me-2"></i>Top 5 Produk Terlaris</h5>
                     </div>
                     <div class="chart-body">
-                        @if($topProducts->isNotEmpty())
-                            <div style="height: 350px;">
-                                <canvas id="productChart"></canvas>
-                            </div>
-                        @else
-                            <div class="empty-state">
-                                <i class="fas fa-box-open"></i>
-                                <p>Belum ada produk terjual</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-6">
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <div>
-                            <h6 class="chart-title">
-                                <i class="fas fa-credit-card me-2"></i>
-                                Metode Pembayaran
-                            </h6>
-                            <p class="chart-subtitle">Preferensi metode pembayaran</p>
+                        <div class="chart-container">
+                            <canvas id="topProductsChart"></canvas>
                         </div>
-                    </div>
-                    <div class="chart-body">
-                        @if($paymentStats->isNotEmpty())
-                            <div style="height: 350px;">
-                                <canvas id="paymentChart"></canvas>
-                            </div>
-                        @else
-                            <div class="empty-state">
-                                <i class="fas fa-credit-card"></i>
-                                <p>Belum ada data pembayaran</p>
-                            </div>
-                        @endif
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Enhanced Charts Row 3 --}}
+        {{-- ROW 4: PAYMENT METHOD --}}
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title"><i class="fas fa-credit-card me-2"></i>Metode Pembayaran</h5>
+                    </div>
+                    <div class="chart-body">
+                        <div class="chart-container mx-auto" style="max-width: 600px;">
+                            <canvas id="paymentMethodChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ROW 5: ORDER STATUS --}}
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title"><i class="fas fa-box me-2"></i>Status Order</h5>
+                    </div>
+                    <div class="chart-body">
+                        <div class="chart-container mx-auto" style="max-width: 600px;">
+                            <canvas id="orderStatusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ROW 6: CATEGORY PERFORMANCE --}}
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title"><i class="fas fa-tags me-2"></i>Performa Kategori</h5>
+                    </div>
+                    <div class="chart-body">
+                        <div class="chart-container">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ROW 7: TOP CUSTOMERS TABLE --}}
         <div class="row g-4">
-            <div class="col-xl-6">
+            <div class="col-12">
                 <div class="chart-card">
                     <div class="chart-header">
-                        <div>
-                            <h6 class="chart-title">
-                                <i class="fas fa-boxes me-2"></i>
-                                Performa Kategori Produk
-                            </h6>
-                            <p class="chart-subtitle">Revenue berdasarkan kategori</p>
-                        </div>
+                        <h5 class="chart-title"><i class="fas fa-user-crown me-2"></i>Top 5 Customer</h5>
                     </div>
                     <div class="chart-body">
-                        @if($categoryStats->isNotEmpty())
-                            <div style="height: 350px;">
-                                <canvas id="categoryChart"></canvas>
-                            </div>
-                        @else
-                            <div class="empty-state">
-                                <i class="fas fa-boxes"></i>
-                                <p>Belum ada data kategori</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-6">
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <div>
-                            <h6 class="chart-title">
-                                <i class="fas fa-crown me-2"></i>
-                                Top 5 Customer VIP
-                            </h6>
-                            <p class="chart-subtitle">Customer dengan total belanja tertinggi</p>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Nama</th>
+                                        <th>Email</th>
+                                        <th class="text-end">Total Order</th>
+                                        <th class="text-end">Total Belanja</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($topCustomers as $index => $customer)
+                                    <tr>
+                                        <td>
+                                            @if($index == 0)
+                                                <span class="badge bg-rank-1"><i class="fas fa-crown me-1"></i>1</span>
+                                            @elseif($index == 1)
+                                                <span class="badge bg-rank-2"><i class="fas fa-medal me-1"></i>2</span>
+                                            @elseif($index == 2)
+                                                <span class="badge bg-rank-3"><i class="fas fa-award me-1"></i>3</span>
+                                            @else <span class="badge bg-light text-dark">{{ $index + 1 }}</span>
+                                            @endif
+                                        </td>
+                                        <td><strong>{{ $customer->name }}</strong></td>
+                                        <td>{{ $customer->email }}</td>
+                                        <td class="text-end">{{ number_format($customer->total_orders) }}</td>
+                                        <td class="text-end"><strong>Rp {{ number_format($customer->total_spent, 0, ',', '.') }}</strong></td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">Tidak ada data customer</td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
-                    <div class="chart-body">
-                        @if($topCustomers->isNotEmpty())
-                            <div class="vip-customers-list">
-                                @foreach($topCustomers as $index => $customer)
-                                <div class="vip-customer-item">
-                                    <div class="vip-rank rank-{{ $index + 1 }}">
-                                        <span>{{ $index + 1 }}</span>
-                                    </div>
-                                    <div class="vip-avatar">
-                                        {{ strtoupper(substr($customer->name, 0, 2)) }}
-                                    </div>
-                                    <div class="vip-info">
-                                        <h6 class="vip-name">{{ $customer->name }}</h6>
-                                        <p class="vip-email">{{ $customer->email }}</p>
-                                    </div>
-                                    <div class="vip-stats">
-                                        <div class="vip-orders">
-                                            <span class="label">Orders</span>
-                                            <span class="value">{{ $customer->total_orders }}</span>
-                                        </div>
-                                        <div class="vip-spent">
-                                            <span class="label">Total Belanja</span>
-                                            <span class="value">Rp {{ number_format($customer->total_spent, 0, ',', '.') }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <div class="empty-state">
-                                <i class="fas fa-user-friends"></i>
-                                <p>Belum ada data customer</p>
-                            </div>
-                        @endif
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 
+{{-- SCRIPTS --}}
+<link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-    Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-    Chart.defaults.color = '#64748b';
-
-    // 1. Mini Charts for KPI Cards
-    const miniChartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: { enabled: false } },
-        scales: { x: { display: false }, y: { display: false } },
-        elements: { line: { tension: 0.4 }, point: { radius: 0 } }
-    };
-
-    [1, 2, 3].forEach(num => {
-        // FIX: Menggunakan string concatenation atau template literal dengan benar
-        const ctx = document.getElementById('miniChart' + num); 
-        if (ctx) {
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['', '', '', '', '', ''],
-                    datasets: [{
-                        data: [3, 7, 4, 8, 5, 9], // Dummy data untuk efek visual
-                        borderColor: 'rgba(255, 255, 255, 0.8)',
-                        borderWidth: 2,
-                        fill: false
-                    }]
-                },
-                options: miniChartOptions
-            });
-        }
-    });
-
-    @if($revenueTrend->isNotEmpty())
-    // 2. Revenue Chart with Gradient
-    const revenueCtx = document.getElementById('revenueChart');
-    if(revenueCtx) {
-        const gradient = revenueCtx.getContext('2d').createLinearGradient(0, 0, 0, 350);
-        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.3)');
-        gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
-
-        new Chart(revenueCtx, {
-            type: 'line',
-            data: {
-                labels: {!! json_encode($revenueTrend->map(function($item) {
-                    $monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Oct', 'Nov', 'Des'];
-                    return $monthNames[$item->month] . ' ' . $item->year;
-                })) !!},
-                datasets: [{
-                    label: 'Pendapatan',
-                    data: {!! json_encode($revenueTrend->pluck('total')) !!},
-                    borderColor: '#6366f1',
-                    backgroundColor: gradient,
-                    tension: 0.4,
-                    fill: true,
-                    borderWidth: 3,
-                    pointRadius: 0,
-                    pointHoverRadius: 8,
-                    pointHoverBackgroundColor: '#6366f1',
-                    pointHoverBorderColor: '#fff',
-                    pointHoverBorderWidth: 3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { intersect: false, mode: 'index' },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                        padding: 16,
-                        borderColor: 'rgba(148, 163, 184, 0.1)',
-                        borderWidth: 1,
-                        titleColor: '#f1f5f9',
-                        bodyColor: '#cbd5e1',
-                        displayColors: false,
-                        callbacks: {
-                            label: (c) => 'Rp ' + new Intl.NumberFormat('id-ID').format(c.parsed.y)
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        border: { display: false },
-                        grid: { color: 'rgba(148, 163, 184, 0.1)' },
-                        ticks: {
-                            callback: (v) => 'Rp ' + (v / 1000000).toFixed(0) + 'M',
-                            padding: 10
-                        }
-                    },
-                    x: {
-                        border: { display: false },
-                        grid: { display: false },
-                        ticks: { padding: 10 }
-                    }
-                }
-            }
-        });
+// DATE RANGE PICKER
+const picker = flatpickr("#dateRangePicker", {
+    mode: "range",
+    locale: "id",
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "d M Y",
+    defaultDate: ["{{ $startDate }}", "{{ $endDate }}"],
+    onChange: function(selectedDates) {
+        if (selectedDates.length === 2) applyDateRange(selectedDates);
     }
-    @endif
+});
 
-    @if($orderStatusStats->isNotEmpty())
-    // 3. Order Status Chart
-    new Chart(document.getElementById('orderStatusChart'), {
-        type: 'doughnut',
-        data: {
-            labels: {!! json_encode($orderStatusStats->pluck('status')->map(function($s) {
-                $labels = ['paid' => 'Paid', 'pending' => 'Pending', 'cancelled' => 'Cancelled'];
-                return $labels[$s] ?? ucfirst($s);
-            })) !!},
-            datasets: [{
-                data: {!! json_encode($orderStatusStats->pluck('total')) !!},
-                backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#6366f1', '#8b5cf6'],
-                borderWidth: 4,
-                borderColor: '#ffffff',
-                hoverOffset: 15
-            }]
+function setQuickRange(type) {
+    let start, end;
+    const now = new Date();
+    switch(type) {
+        case 'today': start = end = now; break;
+        case 'week':
+            start = new Date(now);
+            start.setDate(now.getDate() - now.getDay() + 1);
+            end = now;
+            break;
+        case 'month':
+            start = new Date(now.getFullYear(), now.getMonth(), 1);
+            end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            break;
+        case 'quarter':
+            const q = Math.floor(now.getMonth() / 3);
+            start = new Date(now.getFullYear(), q * 3, 1);
+            end = new Date(now.getFullYear(), (q + 1) * 3, 0);
+            break;
+        case 'year':
+            start = new Date(now.getFullYear(), 0, 1);
+            end = new Date(now.getFullYear(), 11, 31);
+            break;
+        case 'all':
+            start = new Date(2015, 0, 1);
+            end = now;
+            break;
+    }
+    picker.setDate([start, end]);
+    applyDateRange([start, end]);
+}
+
+function applyDateRange(dates) {
+    const o1 = dates[0].getTime() - (dates[0].getTimezoneOffset() * 60000);
+    const o2 = dates[1].getTime() - (dates[1].getTimezoneOffset() * 60000);
+    const s = new Date(o1).toISOString().split('T')[0];
+    const e = new Date(o2).toISOString().split('T')[0];
+    window.location.href = `{{ route('owner.dashboard') }}?start_date=${s}&end_date=${e}`;
+}
+
+// COLOR PALETTE
+const COLORS = {
+    gradients: {
+        blue: ['#667eea', '#764ba2'],
+        teal: ['#11998e', '#38ef7d'],
+        ocean: ['#4facfe', '#00f2fe'],
+        sunset: ['#fa709a', '#fee140'],
+        purple: ['#a18cd1', '#fbc2eb'],
+    },
+    category: ['#667eea', '#a18cd1', '#c471f5', '#fa709a', '#4facfe', '#11998e'],
+    rank: ['#667eea', '#7c9aef', '#92b4f4', '#a8cef9', '#bee8fe'],
+    status: {
+        success: '#11998e',
+        warning: '#feca57',
+        danger: '#ee5a6f',
+        processing: '#4facfe',
+        shipped: '#a18cd1',
+    }
+};
+
+// CHART DEFAULTS
+const chartDefaults = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            display: true,
+            position: 'top',
+            labels: {
+                padding: 15,
+                font: { size: 12, weight: '500' },
+                usePointStyle: true,
+                boxWidth: 10,
+                boxHeight: 10
+            }
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '70%',
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        padding: 20,
-                        font: { size: 13, weight: '500' },
-                        usePointStyle: true,
-                        pointStyle: 'circle'
+        tooltip: {
+            backgroundColor: 'rgba(30, 30, 30, 0.95)',
+            padding: 14,
+            titleFont: { size: 14, weight: '600' },
+            bodyFont: { size: 13 },
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderWidth: 1,
+            callbacks: {
+                label: function(ctx) {
+                    let lbl = ctx.dataset.label || '';
+                    if (lbl) lbl += ': ';
+                    if (ctx.parsed.y !== null) {
+                        lbl += 'Rp ' + ctx.parsed.y.toLocaleString('id-ID');
+                    } else if (ctx.parsed !== null) {
+                        lbl += ctx.parsed.toLocaleString('id-ID');
                     }
+                    return lbl;
                 }
             }
         }
-    });
-    @endif
+    }
+};
 
-    @if($topProducts->isNotEmpty())
-    // 4. Top Products Chart
-    new Chart(document.getElementById('productChart'), {
-        type: 'bar',
-        data: {
-            labels: {!! json_encode($topProducts->pluck('name')) !!},
-            datasets: [{
-                label: 'Qty Terjual',
-                data: {!! json_encode($topProducts->pluck('total_qty')) !!},
-                backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#06b6d4'].map(c => c + 'dd'),
-                borderColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#06b6d4'],
-                borderWidth: 2,
-                borderRadius: 8,
-                barThickness: 35
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    border: { display: false },
-                    grid: { color: 'rgba(148, 163, 184, 0.1)' }
-                },
-                y: {
-                    border: { display: false },
-                    grid: { display: false }
-                }
-            }
-        }
-    });
-    @endif
+// 1. REVENUE TREND CHART
+const revenueTrendData = @json($revenueTrend);
+const labels = revenueTrendData.map(item => {
+    if (item.full_date) {
+        return item.day_name || new Date(item.full_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+    } else if (item.week) return `Week ${item.week}`;
+    else if (item.month) {
+        const m = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+        return m[item.month - 1];
+    } else if (item.year) return item.year.toString();
+    return '';
+});
+const revenues = revenueTrendData.map(item => item.total || 0);
 
-    @if($paymentStats->isNotEmpty())
-    // 5. Payment Methods Chart
-    new Chart(document.getElementById('paymentChart'), {
-        type: 'pie',
-        data: {
-            labels: {!! json_encode($paymentStats->pluck('provider_name')) !!},
-            datasets: [{
-                data: {!! json_encode($paymentStats->pluck('total_transaksi')) !!},
-                backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#8b5cf6'].map(c => c + 'dd'),
-                borderColor: '#ffffff',
-                borderWidth: 4,
-                hoverOffset: 15
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        padding: 20,
-                        font: { size: 13, weight: '500' },
-                        usePointStyle: true,
-                        pointStyle: 'circle'
-                    }
-                }
-            }
-        }
-    });
-    @endif
-
-    @if($categoryStats->isNotEmpty())
-    // 6. Category Performance Chart
-    new Chart(document.getElementById('categoryChart'), {
-        type: 'bar',
-        data: {
-            labels: {!! json_encode($categoryStats->pluck('category')) !!},
-            datasets: [{
-                label: 'Revenue',
-                data: {!! json_encode($categoryStats->pluck('total_revenue')) !!},
-                backgroundColor: '#6366f1dd',
-                borderColor: '#6366f1',
-                borderWidth: 2,
-                borderRadius: 10,
-                barThickness: 45
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                    padding: 16,
-                    callbacks: {
-                        label: (c) => 'Rp ' + new Intl.NumberFormat('id-ID').format(c.parsed.y)
-                    }
-                }
+new Chart(document.getElementById('revenueTrendChart'), {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Pendapatan (Rp)',
+            data: revenues,
+            borderColor: COLORS.gradients.blue[0],
+            backgroundColor: function(ctx) {
+                const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
+                g.addColorStop(0, 'rgba(102, 126, 234, 0.3)');
+                g.addColorStop(1, 'rgba(102, 126, 234, 0)');
+                return g;
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    border: { display: false },
-                    grid: { color: 'rgba(148, 163, 184, 0.1)' },
-                    ticks: {
-                        callback: (v) => 'Rp ' + (v / 1000000).toFixed(1) + 'M'
-                    }
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 5,
+            pointHoverRadius: 8,
+            pointBackgroundColor: '#fff',
+            pointBorderColor: COLORS.gradients.blue[0],
+            pointBorderWidth: 3,
+            pointHoverBackgroundColor: COLORS.gradients.blue[0],
+            pointHoverBorderColor: '#fff',
+            pointHoverBorderWidth: 3
+        }]
+    },
+    options: {
+        ...chartDefaults,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(v) {
+                        return v >= 1000000 ? 'Rp ' + (v/1000000).toFixed(1) + 'M' : 'Rp ' + (v/1000).toFixed(0) + 'K';
+                    },
+                    font: { size: 11 }
                 },
-                x: {
-                    border: { display: false },
-                    grid: { display: false }
+                grid: { color: 'rgba(0, 0, 0, 0.04)' }
+            },
+            x: {
+                ticks: { font: { size: 11 } },
+                grid: { display: false }
+            }
+        }
+    }
+});
+
+// 2. TOP PRODUCTS CHART
+const topProductsData = @json($topProducts);
+new Chart(document.getElementById('topProductsChart'), {
+    type: 'bar',
+    data: {
+        labels: topProductsData.map(p => p.name),
+        datasets: [{
+            label: 'Quantity Terjual',
+            data: topProductsData.map(p => p.total_qty),
+            backgroundColor: COLORS.rank,
+            borderRadius: 10,
+            borderSkipped: false
+        }]
+    },
+    options: {
+        ...chartDefaults,
+        indexAxis: 'y',
+        plugins: {
+            ...chartDefaults.plugins,
+            legend: { display: false }
+        },
+        scales: {
+            x: {
+                beginAtZero: true,
+                ticks: { font: { size: 11 } },
+                grid: { color: 'rgba(0, 0, 0, 0.04)' }
+            },
+            y: {
+                ticks: { font: { size: 11 } },
+                grid: { display: false }
+            }
+        }
+    }
+});
+
+// 3. PAYMENT METHOD CHART
+const paymentData = @json($paymentStats);
+new Chart(document.getElementById('paymentMethodChart'), {
+    type: 'doughnut',
+    data: {
+        labels: paymentData.map(p => p.provider_name),
+        datasets: [{
+            data: paymentData.map(p => p.total_transaksi),
+            backgroundColor: COLORS.category,
+            borderWidth: 4,
+            borderColor: '#fff',
+            hoverOffset: 12
+        }]
+    },
+    options: {
+        ...chartDefaults,
+        cutout: '68%',
+        plugins: {
+            ...chartDefaults.plugins,
+            legend: { ...chartDefaults.plugins.legend, position: 'right' },
+            tooltip: {
+                ...chartDefaults.plugins.tooltip,
+                callbacks: {
+                    label: function(ctx) {
+                        const lbl = ctx.label || '';
+                        const val = ctx.parsed;
+                        const tot = ctx.dataset.data.reduce((a,b) => a+b, 0);
+                        const pct = ((val/tot)*100).toFixed(1);
+                        return `${lbl}: ${val} (${pct}%)`;
+                    }
                 }
             }
         }
-    });
-    @endif
+    }
+});
+
+// 4. ORDER STATUS CHART
+const orderStatusData = @json($orderStatusStats);
+const statusLabels = {
+    'pending': 'Pending', 'paid': 'Dibayar', 'processing': 'Diproses',
+    'shipped': 'Dikirim', 'completed': 'Selesai', 'cancelled': 'Dibatalkan', 'failed': 'Gagal'
+};
+const statusColors = orderStatusData.map(s => {
+    const st = s.status.toLowerCase();
+    if (['paid', 'completed'].includes(st)) return COLORS.status.success;
+    if (['pending', 'unpaid'].includes(st)) return COLORS.status.warning;
+    if (['cancelled', 'failed'].includes(st)) return COLORS.status.danger;
+    if (st === 'processing') return COLORS.status.processing;
+    if (st === 'shipped') return COLORS.status.shipped;
+    return '#94a3b8';
+});
+
+new Chart(document.getElementById('orderStatusChart'), {
+    type: 'pie',
+    data: {
+        labels: orderStatusData.map(s => statusLabels[s.status] || s.status),
+        datasets: [{
+            data: orderStatusData.map(s => s.total),
+            backgroundColor: statusColors,
+            borderWidth: 4,
+            borderColor: '#fff',
+            hoverOffset: 12
+        }]
+    },
+    options: {
+        ...chartDefaults,
+        plugins: {
+            ...chartDefaults.plugins,
+            legend: { ...chartDefaults.plugins.legend, position: 'right' }
+        }
+    }
+});
+
+// 5. CATEGORY PERFORMANCE CHART
+const categoryData = @json($categoryStats);
+new Chart(document.getElementById('categoryChart'), {
+    type: 'bar',
+    data: {
+        labels: categoryData.map(c => c.category),
+        datasets: [{
+            label: 'Revenue (Rp)',
+            data: categoryData.map(c => c.total_revenue),
+            backgroundColor: COLORS.category,
+            borderRadius: 10,
+            borderSkipped: false
+        }]
+    },
+    options: {
+        ...chartDefaults,
+        plugins: {
+            ...chartDefaults.plugins,
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(v) {
+                        return 'Rp ' + (v/1000000).toFixed(1) + 'M';
+                    },
+                    font: { size: 11 }
+                },
+                grid: { color: 'rgba(0, 0, 0, 0.04)' }
+            },
+            x: {
+                ticks: { font: { size: 11 } },
+                grid: { display: false }
+            }
+        }
+    }
+});
 </script>
 
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+:root {
+    --gradient-blue: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-teal: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    --gradient-ocean: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --gradient-sunset: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    --gradient-purple: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+    --shadow-sm: 0 2px 8px rgba(102, 126, 234, 0.08);
+    --shadow-md: 0 4px 16px rgba(102, 126, 234, 0.12);
+    --shadow-lg: 0 8px 32px rgba(102, 126, 234, 0.16);
+}
 
-    .dashboard-container {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        position: relative;
-        overflow: hidden;
-    }
+.dashboard-container {
+    min-height: 100vh;
+    position: relative;
+}
 
-    .dashboard-bg {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: 
-            radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
-            radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.3), transparent 50%),
-            radial-gradient(circle at 40% 20%, rgba(139, 92, 246, 0.3), transparent 50%);
-        animation: bgFloat 20s ease-in-out infinite;
-    }
+.dashboard-bg {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #fa709a 100%);
+    opacity: 0.04;
+    z-index: -1;
+}
 
-    @keyframes bgFloat {
-        0%, 100% { transform: translate(0, 0) scale(1); }
-        33% { transform: translate(30px, -30px) scale(1.1); }
-        66% { transform: translate(-20px, 20px) scale(0.9); }
-    }
+.dashboard-title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
 
-    /* Header Styles */
-    .dashboard-header {
-        animation: slideDown 0.6s ease-out;
-    }
+.gradient-text {
+    background: var(--gradient-blue);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
 
-    @keyframes slideDown {
-        from { opacity: 0; transform: translateY(-30px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+.date-controls-wrapper {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 1.25rem;
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
 
+.quick-select {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.quick-btn {
+    padding: 0.5rem 1rem;
+    border: 2px solid #e5e7eb;
+    background: white;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.quick-btn:hover {
+    background: var(--gradient-blue);
+    color: white;
+    border-color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.date-range-input {
+    width: 100%;
+    padding: 0.75rem 1.25rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: white;
+}
+
+.date-range-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.period-info {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    border-left: 4px solid #667eea;
+    font-size: 0.95rem;
+}
+
+.kpi-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 1.75rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.5) 100%);
+    opacity: 0;
+    transition: opacity 0.4s;
+}
+
+.kpi-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+}
+
+.kpi-card:hover::before {
+    opacity: 1;
+}
+
+.kpi-sparkle {
+    position: absolute;
+    top: 10px; right: 10px;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+.kpi-primary .kpi-sparkle {
+    background: radial-gradient(circle, #667eea 0%, transparent 70%);
+}
+
+.kpi-success .kpi-sparkle {
+    background: radial-gradient(circle, #11998e 0%, transparent 70%);
+}
+
+.kpi-info .kpi-sparkle {
+    background: radial-gradient(circle, #4facfe 0%, transparent 70%);
+}
+
+.kpi-warning .kpi-sparkle {
+    background: radial-gradient(circle, #fa709a 0%, transparent 70%);
+}
+
+.kpi-icon {
+    width: 70px; height: 70px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.kpi-card:hover .kpi-icon {
+    transform: scale(1.1) rotate(-5deg);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.kpi-primary .kpi-icon {
+    background: var(--gradient-blue);
+    color: white;
+}
+
+.kpi-success .kpi-icon {
+    background: var(--gradient-teal);
+    color: white;
+}
+
+.kpi-info .kpi-icon {
+    background: var(--gradient-ocean);
+    color: white;
+}
+
+.kpi-warning .kpi-icon {
+    background: var(--gradient-sunset);
+    color: white;
+}
+
+.kpi-content {
+    flex: 1;
+}
+
+.kpi-label {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin: 0 0 0.5rem 0;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.kpi-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+.chart-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chart-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.chart-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e5e7eb;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.chart-title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+}
+
+.chart-title i {
+    background: var(--gradient-blue);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.chart-body {
+    padding: 2rem;
+    position: relative;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+}
+
+#revenueTrendChart {
+    height: 320px !important;
+}
+
+#topProductsChart {
+    height: 300px !important;
+}
+
+#paymentMethodChart {
+    height: 320px !important;
+}
+
+#orderStatusChart {
+    height: 320px !important;
+}
+
+#categoryChart {
+    height: 300px !important;
+}
+
+.table-responsive {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table {
+    margin: 0;
+}
+
+.table thead th {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    color: #475569;
+    font-weight: 600;
+    border-bottom: 2px solid #e5e7eb;
+    padding: 1.25rem 1.5rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table tbody tr {
+    transition: all 0.2s;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.table tbody tr:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.04) 0%, rgba(250, 112, 154, 0.04) 100%);
+    transform: scale(1.01);
+}
+
+.table tbody td {
+    padding: 1.25rem 1.5rem;
+    vertical-align: middle;
+    color: #334155;
+}
+
+.badge {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.badge.bg-rank-1 {
+    background: var(--gradient-sunset) !important;
+    color: white;
+    box-shadow: 0 2px 8px rgba(250, 112, 154, 0.3);
+}
+
+.badge.bg-rank-2 {
+    background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%) !important;
+    color: white;
+    box-shadow: 0 2px 8px rgba(100, 116, 139, 0.3);
+}
+
+.badge.bg-rank-3 {
+    background: linear-gradient(135deg, #cd7f32 0%, #b87333 100%) !important;
+    color: white;
+    box-shadow: 0 2px 8px rgba(205, 127, 50, 0.3);
+}
+
+.badge.bg-light {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%) !important;
+    color: #475569 !important;
+}
+
+@media (max-width: 1200px) {
     .dashboard-title {
-        font-size: 2.5rem;
-        font-weight: 800;
-        letter-spacing: -1px;
+        font-size: 2rem;
     }
-
-    .gradient-text {
-        background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-
-    .dashboard-subtitle {
-        color: rgba(255, 255, 255, 0.9);
-        font-size: 1rem;
-        font-weight: 500;
-    }
-
-    .status-badge {
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        padding: 12px 24px;
-        border-radius: 50px;
-        color: white;
-        font-weight: 600;
-        font-size: 0.9rem;
-        display: flex;
-        align-items: center;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        animation: fadeInScale 0.6s ease-out 0.2s both;
-    }
-
-    @keyframes fadeInScale {
-        from { opacity: 0; transform: scale(0.8); }
-        to { opacity: 1; transform: scale(1); }
-    }
-
-    .pulse-dot {
-        width: 10px;
-        height: 10px;
-        background: #10b981;
-        border-radius: 50%;
-        animation: pulse 2s ease-in-out infinite;
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-    }
-
-    @keyframes pulse {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-        50% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-    }
-
-    /* Enhanced KPI Cards */
-    .kpi-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: 24px;
-        padding: 28px;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-        position: relative;
-        overflow: hidden;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        animation: fadeInUp 0.6s ease-out both;
-        height: 100%;
-    }
-
-    .kpi-card:nth-child(1) { animation-delay: 0.1s; }
-    .kpi-card:nth-child(2) { animation-delay: 0.2s; }
-    .kpi-card:nth-child(3) { animation-delay: 0.3s; }
-    .kpi-card:nth-child(4) { animation-delay: 0.4s; }
-
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .kpi-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, var(--card-color-1), var(--card-color-2));
-        transform: scaleX(0);
-        transform-origin: left;
-        transition: transform 0.4s ease;
-    }
-
-    .kpi-card:hover::before { transform: scaleX(1); }
-
-    .kpi-primary { --card-color-1: #6366f1; --card-color-2: #8b5cf6; }
-    .kpi-success { --card-color-1: #10b981; --card-color-2: #059669; }
-    .kpi-info { --card-color-1: #06b6d4; --card-color-2: #0891b2; }
-    .kpi-warning { --card-color-1: #f59e0b; --card-color-2: #d97706; }
-
-    .kpi-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.15);
-    }
-
+    
     .kpi-icon {
         width: 60px;
         height: 60px;
-        border-radius: 16px;
-        background: linear-gradient(135deg, var(--card-color-1), var(--card-color-2));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 20px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        font-size: 1.5rem;
     }
-
-    .kpi-icon i { font-size: 1.6rem; color: white; }
-
-    .kpi-label {
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #64748b;
-        margin-bottom: 8px;
-    }
-
-    .kpi-value {
-        font-size: 1.8rem;
-        font-weight: 800;
-        color: #0f172a;
-        margin-bottom: 12px;
-        letter-spacing: -0.5px;
-    }
-
-    .kpi-chart-mini {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        width: 120px;
-        height: 40px;
-        opacity: 0.15;
-    }
-
-    .rating-stars {
-        position: absolute;
-        bottom: 20px;
-        right: 20px;
-        display: flex;
-        gap: 4px;
-    }
-
-    .rating-stars i {
-        font-size: 0.9rem;
-        color: #cbd5e1;
-        transition: all 0.3s ease;
-    }
-
-    .rating-stars i.active { color: #f59e0b; }
-
-    /* Chart Cards */
-    .chart-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: 24px;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        animation: fadeInUp 0.6s ease-out both;
-        height: 100%;
-    }
-
-    .chart-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.15);
-    }
-
-    .chart-header {
-        padding: 24px 28px;
-        border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .chart-title {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: #0f172a;
-        margin: 0;
-        display: flex;
-        align-items: center;
-    }
-
-    .chart-title i { color: #6366f1; }
-
-    .chart-subtitle {
-        font-size: 0.85rem;
-        color: #64748b;
-        margin: 4px 0 0 0;
-        font-weight: 500;
-    }
-
-    .chart-body { padding: 28px; }
-
-    /* Empty States */
-    .empty-state {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 350px;
-        color: #cbd5e1;
-    }
-
-    .empty-state i {
-        font-size: 4rem;
-        margin-bottom: 16px;
-        opacity: 0.3;
-    }
-
-    .empty-state p {
-        font-size: 1rem;
-        font-weight: 500;
-        margin: 0;
-    }
-
-    /* VIP Customers List */
-    .vip-customers-list {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        max-height: 450px;
-        overflow-y: auto;
-        padding-right: 8px;
-    }
-
-    .vip-customers-list::-webkit-scrollbar { width: 6px; }
-    .vip-customers-list::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
-    .vip-customers-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-
-    .vip-customer-item {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        padding: 20px;
-        background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        transition: all 0.3s ease;
-    }
-
-    .vip-customer-item:hover {
-        transform: translateX(8px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-        border-color: #cbd5e1;
-    }
-
-    .vip-rank {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.3rem;
-        font-weight: 800;
-        color: white;
-        flex-shrink: 0;
-    }
-
-    .vip-rank.rank-1 { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3); }
-    .vip-rank.rank-2 { background: linear-gradient(135deg, #94a3b8, #64748b); box-shadow: 0 8px 20px rgba(148, 163, 184, 0.3); }
-    .vip-rank.rank-3 { background: linear-gradient(135deg, #fb923c, #f97316); box-shadow: 0 8px 20px rgba(249, 115, 22, 0.3); }
-    .vip-rank.rank-4, .vip-rank.rank-5 { background: linear-gradient(135deg, #6366f1, #8b5cf6); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3); }
-
-    .vip-avatar {
-        width: 56px;
-        height: 56px;
-        border-radius: 14px;
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: white;
-        flex-shrink: 0;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-    }
-
-    .vip-info { flex: 1; min-width: 0; }
-    .vip-name { font-size: 1rem; font-weight: 700; color: #0f172a; margin: 0 0 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .vip-email { font-size: 0.85rem; color: #64748b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     
-    .vip-stats { display: flex; gap: 24px; flex-shrink: 0; }
-    .vip-orders, .vip-spent { text-align: right; }
-    .vip-stats .label { display: block; font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-    .vip-orders .value { display: inline-block; padding: 6px 14px; background: linear-gradient(135deg, #06b6d4, #0891b2); color: white; border-radius: 8px; font-size: 0.9rem; font-weight: 700; box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2); }
-    .vip-spent .value { display: block; font-size: 1.1rem; font-weight: 800; color: #10b981; }
-
-    /* Responsive Design */
-    @media (max-width: 1200px) {
-        .dashboard-title { font-size: 2rem; }
-        .kpi-value { font-size: 1.5rem; }
+    .kpi-value {
+        font-size: 1.5rem;
     }
+}
 
-    @media (max-width: 768px) {
-        .dashboard-header, .chart-header { flex-direction: column; align-items: flex-start !important; gap: 16px; }
-        .status-badge { align-self: flex-start; }
-        .vip-customer-item { flex-wrap: wrap; }
-        .vip-stats { width: 100%; justify-content: space-between; }
-        .kpi-chart-mini { display: none; }
+@media (max-width: 768px) {
+    .dashboard-title {
+        font-size: 1.75rem;
     }
+    
+    .quick-select {
+        justify-content: center;
+    }
+    
+    .kpi-card {
+        padding: 1.5rem;
+    }
+    
+    .kpi-icon {
+        width: 55px;
+        height: 55px;
+        font-size: 1.35rem;
+    }
+    
+    .kpi-value {
+        font-size: 1.35rem;
+    }
+    
+    .kpi-label {
+        font-size: 0.8rem;
+    }
+    
+    .chart-body {
+        padding: 1.25rem;
+    }
+    
+    .chart-header {
+        padding: 1.25rem 1.5rem;
+    }
+    
+    #revenueTrendChart {
+        height: 240px !important;
+    }
+    
+    #topProductsChart,
+    #categoryChart {
+        height: 220px !important;
+    }
+    
+    #paymentMethodChart,
+    #orderStatusChart {
+        height: 260px !important;
+    }
+    
+    .table thead th,
+    .table tbody td {
+        padding: 1rem;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-container {
+        padding: 0 !important;
+    }
+    
+    .container-fluid {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+    
+    .dashboard-title {
+        font-size: 1.5rem;
+    }
+    
+    .date-controls-wrapper {
+        padding: 1rem;
+    }
+    
+    .quick-btn {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.75rem;
+    }
+    
+    .kpi-card {
+        padding: 1.25rem;
+    }
+    
+    .kpi-value {
+        font-size: 1.2rem;
+    }
+    
+    .chart-title {
+        font-size: 1rem;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.kpi-card,
+.chart-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.kpi-card:nth-child(1) { animation-delay: 0.1s; }
+.kpi-card:nth-child(2) { animation-delay: 0.2s; }
+.kpi-card:nth-child(3) { animation-delay: 0.3s; }
+.kpi-card:nth-child(4) { animation-delay: 0.4s; }
+
+.flatpickr-calendar {
+    border-radius: 16px !important;
+    box-shadow: var(--shadow-lg) !important;
+    border: 1px solid #e5e7eb !important;
+}
+
+.flatpickr-day.selected {
+    background: var(--gradient-blue) !important;
+    border-color: #667eea !important;
+}
+
+.flatpickr-day.selected:hover {
+    background: var(--gradient-blue) !important;
+    border-color: #667eea !important;
+}
+
+.flatpickr-day:hover {
+    background: rgba(102, 126, 234, 0.1) !important;
+    border-color: rgba(102, 126, 234, 0.3) !important;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
 </style>
+
 @endsection
