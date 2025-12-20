@@ -10,9 +10,7 @@ class OwnerDashboardController extends Controller
 {
     public function index(Request $request)
     {
-        // ==========================================
         // DATE RANGE PARAMETERS
-        // ==========================================
         $startDate = $request->get('start_date', now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->get('end_date', now()->endOfMonth()->format('Y-m-d'));
         
@@ -24,18 +22,14 @@ class OwnerDashboardController extends Controller
         $periodDays = $start->diffInDays($end) + 1;
         $periodLabel = $this->getPeriodLabel($start, $end);
         
-        // ==========================================
         // 1. TOTAL OMZET
-        // ==========================================
         $totalRevenue = DB::connection('warehouse')
             ->table('fact_order_items as f')
             ->join('dim_time as t', 'f.time_key', '=', 't.time_key')
             ->whereBetween('t.full_date', [$startDate, $endDate])
             ->sum('f.subtotal') ?? 0;
 
-        // ==========================================
         // 2. TOTAL ORDER PAID
-        // ==========================================
         $completedOrders = DB::connection('warehouse')
             ->table('fact_orders as fo')
             ->join('dim_time as t', 'fo.time_key', '=', 't.time_key')
@@ -43,23 +37,17 @@ class OwnerDashboardController extends Controller
             ->whereBetween('t.full_date', [$startDate, $endDate])
             ->count();
 
-        // ==========================================
         // 3. TOTAL CUSTOMER (all time)
-        // ==========================================
         $activeCustomers = DB::connection('warehouse')
             ->table('dim_users')
             ->count();
 
-        // ==========================================
         // 4. RATA-RATA KEPUASAN PELANGGAN
-        // ==========================================
         $avgRating = DB::connection('warehouse')
             ->table('fact_reviews')
             ->avg('rating') ?? 0;
 
-        // ==========================================
         // 5. TOP 5 PRODUK TERLARIS
-        // ==========================================
         $topProducts = DB::connection('warehouse')
             ->table('fact_order_items as f')
             ->join('dim_products as p', 'f.product_key', '=', 'p.product_key')
@@ -75,14 +63,10 @@ class OwnerDashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // ==========================================
         // 6. TREN PENDAPATAN (Auto-detect granularity)
-        // ==========================================
         $revenueTrend = $this->getRevenueTrend($startDate, $endDate);
 
-        // ==========================================
         // 7. STATISTIK METODE PEMBAYARAN
-        // ==========================================
         $paymentStats = DB::connection('warehouse')
             ->table('fact_payments as fp')
             ->join('dim_payment_method as dpm', 'fp.payment_method_key', '=', 'dpm.payment_method_key')
@@ -97,9 +81,7 @@ class OwnerDashboardController extends Controller
             ->orderByDesc('total_transaksi')
             ->get();
 
-        // ==========================================
         // 8. STATISTIK STATUS ORDER
-        // ==========================================
         $orderStatusStats = DB::connection('warehouse')
             ->table('fact_orders as fo')
             ->join('dim_time as t', 'fo.time_key', '=', 't.time_key')
@@ -111,9 +93,7 @@ class OwnerDashboardController extends Controller
             ->groupBy('fo.status')
             ->get();
 
-        // ==========================================
         // 9. PERFORMA KATEGORI PRODUK
-        // ==========================================
         $categoryStats = DB::connection('warehouse')
             ->table('fact_order_items as f')
             ->join('dim_products as p', 'f.product_key', '=', 'p.product_key')
@@ -128,9 +108,7 @@ class OwnerDashboardController extends Controller
             ->orderByDesc('total_revenue')
             ->get();
 
-        // ==========================================
         // 10. TOP 5 CUSTOMER
-        // ==========================================
         $topCustomers = DB::connection('warehouse')
             ->table('fact_orders as fo')
             ->join('dim_users as u', 'fo.user_key', '=', 'u.user_key')
@@ -167,9 +145,7 @@ class OwnerDashboardController extends Controller
         ));
     }
 
-    // ==========================================
     // HELPER: Get Revenue Trend (Auto Granularity)
-    // ==========================================
     private function getRevenueTrend($startDate, $endDate)
     {
         $start = Carbon::parse($startDate);
@@ -239,9 +215,7 @@ class OwnerDashboardController extends Controller
         }
     }
 
-    // ==========================================
     // HELPER: Generate Period Label
-    // ==========================================
     private function getPeriodLabel($start, $end)
     {
         $monthNames = [

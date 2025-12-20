@@ -414,7 +414,20 @@ new Chart(document.getElementById('topProductsChart'), {
         indexAxis: 'y',
         plugins: {
             ...chartDefaults.plugins,
-            legend: { display: false }
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: 'rgba(30, 30, 30, 0.95)',
+                padding: 14,
+                titleFont: { size: 14, weight: '600' },
+                bodyFont: { size: 13 },
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                borderWidth: 1,
+                callbacks: {
+                    label: function(ctx) {
+                        return 'Quantity: ' + ctx.parsed.x.toLocaleString('id-ID');
+                    }
+                }
+            }
         },
         scales: {
             x: {
@@ -451,7 +464,12 @@ new Chart(document.getElementById('paymentMethodChart'), {
             ...chartDefaults.plugins,
             legend: { ...chartDefaults.plugins.legend, position: 'right' },
             tooltip: {
-                ...chartDefaults.plugins.tooltip,
+                backgroundColor: 'rgba(30, 30, 30, 0.95)',
+                padding: 14,
+                titleFont: { size: 14, weight: '600' },
+                bodyFont: { size: 13 },
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                borderWidth: 1,
                 callbacks: {
                     label: function(ctx) {
                         const lbl = ctx.label || '';
@@ -498,7 +516,24 @@ new Chart(document.getElementById('orderStatusChart'), {
         ...chartDefaults,
         plugins: {
             ...chartDefaults.plugins,
-            legend: { ...chartDefaults.plugins.legend, position: 'right' }
+            legend: { ...chartDefaults.plugins.legend, position: 'right' },
+            tooltip: {
+                backgroundColor: 'rgba(30, 30, 30, 0.95)',
+                padding: 14,
+                titleFont: { size: 14, weight: '600' },
+                bodyFont: { size: 13 },
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                borderWidth: 1,
+                callbacks: {
+                    label: function(ctx) {
+                        const lbl = ctx.label || '';
+                        const val = ctx.parsed;
+                        const tot = ctx.dataset.data.reduce((a,b) => a+b, 0);
+                        const pct = ((val/tot)*100).toFixed(1);
+                        return `${lbl}: ${val} order (${pct}%)`;
+                    }
+                }
+            }
         }
     }
 });
